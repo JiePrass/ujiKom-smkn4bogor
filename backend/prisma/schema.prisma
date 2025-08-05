@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Salin model-model dari dokumentasi sebelumnya
+model User {
+  id            Int            @id @default(autoincrement())
+  fullName      String
+  email         String         @unique
+  phone         String
+  address       String
+  education     String
+  passwordHash  String
+  role          Role           @default(PARTICIPANT)
+  isVerified    Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  tokens        EmailToken[]
+  registrations Registration[]
+  createdEvents Event[]        @relation("UserCreatedEvents")
+}
+
+model EmailToken {
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int
+  otp       String
+  type      TokenType
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+}
+
+model Event {
+  id            Int            @id @default(autoincrement())
+  title         String
+  description   String
+  date          DateTime
+  time          String
+  location      String
+  flyerUrl      String?
+  createdBy     Int
+  price         Int            @default(0)
+  createdByUser User           @relation("UserCreatedEvents", fields: [createdBy], references: [id])
+  registrations Registration[]
+  createdAt     DateTime       @default(now())
+}
+
+
+model Registration {
+  id              Int          @id @default(autoincrement())
+  user            User         @relation(fields: [userId], references: [id])
+  userId          Int
+  event           Event        @relation(fields: [eventId], references: [id])
+  eventId         Int
+  token           String?      @unique
+  registeredAt    DateTime     @default(now())
+  attendance      Attendance?
+  certificate     Certificate?
+  paymentProofUrl String?
+  status          String?
+}
+
+model Attendance {
+  id             Int          @id @default(autoincrement())
+  registration   Registration @relation(fields: [registrationId], references: [id])
+  registrationId Int          @unique
+  attendedAt     DateTime     @default(now())
+}
+
+model Certificate {
+  id             Int          @id @default(autoincrement())
+  registration   Registration @relation(fields: [registrationId], references: [id])
+  registrationId Int          @unique
+  url            String
+  issuedAt       DateTime     @default(now())
+}
+
+enum Role {
+  ADMIN
+  PARTICIPANT
+}
+
+enum TokenType {
+  VERIFICATION
+  RESET
+}
