@@ -1,11 +1,10 @@
 const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient()
 const bcrypt = require('bcryptjs')
 const { generateOtp } = require('../utils/otp')
 const { generateToken } = require('../utils/token')
 const crypto = require('crypto');
-
-
-const prisma = new PrismaClient()
+const mailer = require('../utils/mailer')
 
 exports.register = async (data) => {
     const {
@@ -15,12 +14,12 @@ exports.register = async (data) => {
         address,
         education,
         password
-    } = data
+    } = data;
 
-    const userExists = await prisma.user.findUnique({ where: { email } })
-    if (userExists) throw new Error('Email sudah digunakan.')
+    const userExists = await prisma.user.findUnique({ where: { email } });
+    if (userExists) throw new Error('Email sudah digunakan.');
 
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
         data: {
@@ -31,10 +30,10 @@ exports.register = async (data) => {
             education,
             passwordHash: hashedPassword
         }
-    })
+    });
 
     // Generate OTP (6 digit acak)
-    const otp = generateOtp()
+    const otp = generateOtp();
 
     await prisma.emailToken.create({
         data: {
@@ -43,12 +42,20 @@ exports.register = async (data) => {
             type: 'VERIFICATION',
             expiresAt: new Date(Date.now() + 5 * 60 * 1000) // 5 menit
         }
-    })
+    });
 
-    console.log(`[OTP] ${email} → ${otp}`) // Sementara log ke konsol
+    // Kirim OTP lewat email
+    const emailHtml = `
+        <h3>Verifikasi Email</h3>
+        <p>Halo ${fullName},</p>
+        <p>Kode OTP untuk verifikasi akun Anda adalah:</p>
+        <h2>${otp}</h2>
+        <p>Kode ini berlaku selama 5 menit. Jangan berikan kode ini ke siapapun.</p>
+    `;
+    await mailer(email, 'Verifikasi Email Akun Event App', emailHtml);
 
-    return { message: 'Akun berhasil dibuat. Silakan verifikasi email dalam 5 menit.' }
-}
+    return { message: 'Akun berhasil dibuat. Silakan cek email untuk verifikasi dalam 5 menit.' };
+};
 
 exports.verifyEmail = async ({ email, otp }) => {
     const user = await prisma.user.findUnique({ where: { email } })
@@ -126,13 +133,20 @@ exports.requestPasswordReset = async ({ email }) => {
         }
     });
 
-    // Buat URL reset password
-    const resetUrl = `http://localhost:2304/reset-password?token=${token}`;
+    // Buat URL reset password (sesuaikan domain frontend Anda)
+    const resetUrl = `http://localhost:5173/reset-password?token=${token}`;
 
-    // Untuk ujikom → tampilkan di console
-    console.log(`🔗 Link reset password untuk ${email}: ${resetUrl}`);
+    // Kirim email
+    const emailHtml = `
+        <h3>Reset Password</h3>
+        <p>Anda menerima email ini karena ada permintaan reset password untuk akun Anda.</p>
+        <p>Klik link berikut untuk reset password:</p>
+        <a href="${resetUrl}">${resetUrl}</a>
+        <p>Link ini akan kedaluwarsa dalam 1 jam.</p>
+    `;
+    await mailer(email, 'Reset Password Akun Anda', emailHtml);
 
-    return { message: 'Link reset password telah dibuat. Cek email.' };
+    return { message: 'Link reset password telah dikirim ke email.' };
 };
 
 exports.resetPassword = async ({ token, newPassword }) => {
