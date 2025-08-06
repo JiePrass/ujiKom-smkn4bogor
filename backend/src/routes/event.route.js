@@ -17,10 +17,23 @@ router.post(
     '/',
     requireLogin,
     requireRole('ADMIN'),
-    upload.fields([
-        { name: 'flyer', maxCount: 1 },
-    ]),
+    upload.fields([{ name: 'flyer', maxCount: 1 }]),
     eventController.createEvent
+)
+
+// Update event
+router.patch(
+    '/:id',
+    requireLogin,
+    upload.fields([{ name: 'flyer', maxCount: 1 }]),
+    eventController.updateEvent
+)
+
+// Delete event
+router.delete(
+    '/:id',
+    requireLogin,
+    eventController.deleteEvent
 )
 
 // Attend (presensi peserta)

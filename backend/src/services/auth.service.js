@@ -1,8 +1,9 @@
 const { PrismaClient } = require('@prisma/client')
 const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
 const { generateOtp } = require('../utils/otp')
 const { generateToken } = require('../utils/token')
+const crypto = require('crypto');
+
 
 const prisma = new PrismaClient()
 
@@ -107,3 +108,53 @@ exports.login = async ({ email, password }) => {
     }
 }
 
+exports.requestPasswordReset = async ({ email }) => {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) throw new Error('Email tidak ditemukan.');
+
+    // Generate token unik
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiry = new Date(Date.now() + 60 * 60 * 1000); // berlaku 1 jam
+
+    // Simpan token di EmailToken
+    await prisma.emailToken.create({
+        data: {
+            userId: user.id,
+            otp: token,
+            type: 'RESET',
+            expiresAt: expiry
+        }
+    });
+
+    // Buat URL reset password
+    const resetUrl = `http://localhost:2304/reset-password?token=${token}`;
+
+    // Untuk ujikom → tampilkan di console
+    console.log(`🔗 Link reset password untuk ${email}: ${resetUrl}`);
+
+    return { message: 'Link reset password telah dibuat. Cek email.' };
+};
+
+exports.resetPassword = async ({ token, newPassword }) => {
+    const tokenRecord = await prisma.emailToken.findFirst({
+        where: { otp: token, type: 'RESET' },
+        orderBy: { createdAt: 'desc' },
+        include: { user: true }
+    });
+
+    if (!tokenRecord) throw new Error('Token tidak valid.');
+    if (new Date() > tokenRecord.expiresAt) throw new Error('Token sudah kedaluwarsa.');
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password user
+    await prisma.user.update({
+        where: { id: tokenRecord.user.id },
+        data: { passwordHash: hashedPassword }
+    });
+
+    // Hapus token setelah digunakan
+    await prisma.emailToken.delete({ where: { id: tokenRecord.id } });
+
+    return { message: 'Password berhasil direset. Silakan login.' };
+};

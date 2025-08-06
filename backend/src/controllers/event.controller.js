@@ -26,3 +26,22 @@ exports.createEvent = async (req, res) => {
         res.status(400).json({ error: error.message })
     }
 }
+
+exports.updateEvent = async (req, res) => {
+    try {
+        const response = await eventService.updateEvent(req, req.user)
+        res.status(200).json(response)
+    } catch (error) {
+        res.status(400).json({ error: error.message })
+    }
+}
+
+exports.deleteEvent = async (req, res) => {
+    try {
+        const response = await eventService.deleteEvent(req.params.id, req.user)
+        res.status(200).json(response)
+    } catch (error) {
+        res.status(400).json({ error: error.message })
+    }
+}
+

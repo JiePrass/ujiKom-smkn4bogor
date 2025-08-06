@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Salin model-model dari dokumentasi sebelumnya
 model User {
   id            Int            @id @default(autoincrement())
   fullName      String
