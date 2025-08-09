@@ -45,12 +45,24 @@ export default function Header() {
 
     const toggleMenu = () => setIsOpen(!isOpen);
 
-    const handleSectionNavigation = (sectionId: string) => {
-        if (location.pathname !== "/") {
-            navigate(`/#${sectionId}`);
+    const handleSectionNavigation = (target: string) => {
+        if (target.startsWith("/")) {
+            // Navigasi ke halaman berbeda (misal: /event)
+            navigate(target);
         } else {
-            const el = document.getElementById(sectionId);
-            if (el) el.scrollIntoView({ behavior: "smooth" });
+            // Navigasi ke anchor section di halaman saat ini
+            if (location.pathname !== "/") {
+                // Jika sedang di luar halaman utama, arahkan ke halaman utama + hash
+                navigate(`/#${target}`);
+            } else {
+                if (target === "beranda") {
+                    // Scroll ke atas jika target adalah beranda
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                } else {
+                    const el = document.getElementById(target);
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                }
+            }
         }
     };
 
@@ -59,7 +71,7 @@ export default function Header() {
     }, [isOpen]);
 
     useEffect(() => {
-        const sectionIds = ["tentang", "event", "kontak"];
+        const sectionIds = ["beranda", "tentang", "kontak"];
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {

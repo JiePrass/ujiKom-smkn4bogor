@@ -1,50 +1,49 @@
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
-type NavItem = {
+interface NavLink {
     key: string;
     href: string;
-};
+}
 
-type DesktopNavProps = {
-    navLinks: NavItem[];
+interface Props {
+    navLinks: NavLink[];
     activeSection: string;
     onNavigate: (sectionId: string) => void;
-};
+}
 
-
-export default function DesktopNav({ navLinks, activeSection, onNavigate }: DesktopNavProps) {
+export default function DesktopNav({ navLinks, activeSection, onNavigate }: Props) {
     const location = useLocation();
 
-    const isActive = (href: string) => {
+    const getIsActive = (href: string) => {
         if (href.startsWith("#")) {
-            return location.pathname === "/" && `#${activeSection}` === href;
+            const targetId = href.substring(1);
+            return activeSection === targetId;
         }
+
         return location.pathname === href;
     };
 
+
     return (
-        <nav className="hidden md:flex gap-6 text-sm font-medium text-gray-500">
-            {navLinks.map((item) =>
-                item.href.startsWith("#") ? (
-                    <button
-                        key={item.key}
-                        onClick={() => onNavigate(item.href.substring(1))}
-                        className={`transition ${isActive(item.href) ? "text-sky-500 font-semibold" : "hover:text-gray-700"
-                            }`}
-                    >
-                        {item.key}
-                    </button>
-                ) : (
-                    <Link
-                        key={item.key}
-                        to={item.href}
-                        className={`transition ${isActive(item.href) ? "text-sky-500 font-semibold" : "hover:text-gray-700"
-                            }`}
-                    >
-                        {item.key}
-                    </Link>
-                )
-            )}
+        <nav className="hidden md:flex gap-6">
+            {navLinks.map((link) => (
+                <button
+                    key={link.key}
+                    onClick={() => {
+                        if (link.href.startsWith("#")) {
+                            onNavigate(link.href.substring(1));
+                        } else {
+                            onNavigate(link.href);
+                        }
+                    }}
+                    className={`text-sm font-medium transition-colors ${getIsActive(link.href)
+                            ? "text-blue-600 font-semibold"
+                            : "text-gray-700 hover:text-blue-600"
+                        }`}
+                >
+                    {link.key}
+                </button>
+            ))}
         </nav>
     );
 }
