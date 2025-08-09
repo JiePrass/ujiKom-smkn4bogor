@@ -1,19 +1,9 @@
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { ChevronRight, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
-type NavItem = {
-    key: string;
-    href: string;
-};
-
-type MobileMenuProps = {
-    navLinks: NavItem[];
-    onClose: () => void;
-    onNavigate: (sectionId: string) => void;
-};
-
-export default function MobileMenu({ navLinks, onClose, onNavigate }: MobileMenuProps) {
+export default function MobileMenu({ navLinks, onClose, onNavigate }) {
     return (
         <motion.aside
             initial={{ x: "100%" }}

@@ -1,12 +1,6 @@
 import { Bell } from "lucide-react";
 
-type NotificationDropdownProps = {
-    visible: boolean;
-    toggle: () => void;
-    notifications: string[];
-};
-
-export default function NotificationDropdown({ notifications, visible, toggle }: NotificationDropdownProps) {
+export default function NotificationDropdown({ notifications, visible, toggle }) {
     return (
         <div className="relative">
             <Bell className="w-5 h-5 text-black cursor-pointer" onClick={toggle} />

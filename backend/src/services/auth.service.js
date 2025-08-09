@@ -99,13 +99,11 @@ exports.login = async ({ email, password }) => {
 
     const token = generateToken({
         id: user.id,
-        email: user.email,
-        role: user.role
     })
 
     return {
         token,
-        expiresIn: process.env.JWT_EXPIRES_IN || '5m',
+        expiresIn: process.env.JWT_EXPIRES_IN || '2h',
         user: {
         id: user.id,
         fullName: user.fullName,
@@ -114,6 +112,13 @@ exports.login = async ({ email, password }) => {
         }
     }
 }
+
+exports.updateProfile = async (userId, data) => {
+    return await prisma.user.update({
+        where: { id: userId },
+        data,
+    });
+};
 
 exports.requestPasswordReset = async ({ email }) => {
     const user = await prisma.user.findUnique({ where: { email } });
@@ -171,4 +176,21 @@ exports.resetPassword = async ({ token, newPassword }) => {
     await prisma.emailToken.delete({ where: { id: tokenRecord.id } });
 
     return { message: 'Password berhasil direset. Silakan login.' };
+};
+
+exports.getUserById = async (userId) => {
+    return await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            phone: true,
+            address: true,
+            education: true,
+            role: true,
+            createdAt: true,
+        },
+    });
 };

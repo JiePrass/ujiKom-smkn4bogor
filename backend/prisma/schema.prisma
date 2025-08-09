@@ -15,6 +15,7 @@ model User {
   address       String
   education     String
   passwordHash  String
+  profilePicture String? 
   role          Role           @default(PARTICIPANT)
   isVerified    Boolean        @default(false)
   createdAt     DateTime       @default(now())

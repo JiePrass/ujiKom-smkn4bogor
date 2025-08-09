@@ -22,6 +22,9 @@ async function checkDB() {
   }
 }
 
+// Static file serving for uploads
+app.use('/uploads', express.static('uploads'))
+
 // Default route
 app.get('/', (req, res) => {
   res.json({ message: 'Event Management API is running' })
