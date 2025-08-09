@@ -1,6 +1,6 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 
-export default function DesktopNav({ navLinks, onNavigate }) {
+export default function DesktopNav({ navLinks }) {
     const location = useLocation();
 
     const getIsActive = (href) => {
@@ -10,16 +10,16 @@ export default function DesktopNav({ navLinks, onNavigate }) {
     return (
         <nav className="hidden md:flex gap-6">
             {navLinks.map((link) => (
-                <button
+                <Link
                     key={link.key}
-                    onClick={() => onNavigate(link.href)}
+                    to={link.href}
                     className={`text-sm font-medium transition-colors ${getIsActive(link.href)
-                            ? "text-blue-600 font-semibold"
-                            : "text-gray-700 hover:text-blue-600"
+                        ? "text-blue-600 font-semibold"
+                        : "text-gray-700 hover:text-blue-600"
                         }`}
                 >
                     {link.key}
-                </button>
+                </Link>
             ))}
         </nav>
     );

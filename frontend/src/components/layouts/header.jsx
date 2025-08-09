@@ -3,12 +3,12 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import DesktopNav from "./desktopNav";
+import DesktopNav from "../shared/desktopNav";
 import SearchBar from "../shared/searchBar";
 import ProfileDropdown from "../shared/profileDropdown";
 import NotificationDropdown from "../shared/notificationDropdown";
-import MobileMenu from "./mobileMenu";
-import { getCurrentUser } from "../../api/auth"; // API /auth/me
+import MobileMenu from "./mobileSidebar";
+import { getCurrentUser } from "../../api/auth";
 
 const navLinks = [
     { key: "Beranda", href: "/" },
@@ -138,13 +138,13 @@ export default function Header() {
                             <>
                                 <button
                                     onClick={() => handleNavigation("/login")}
-                                    className="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                    className="text-sm px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
                                 >
                                     Login
                                 </button>
                                 <button
                                     onClick={() => handleNavigation("/register")}
-                                    className="text-sm px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-50"
+                                    className="text-sm px-4 py-2 border border-blue-600 text-blue-600 rounded-full hover:bg-blue-50"
                                 >
                                     Register
                                 </button>
@@ -174,6 +174,8 @@ export default function Header() {
                             navLinks={navLinks}
                             onClose={toggleMenu}
                             onNavigate={handleNavigation}
+                            userData={user}
+                            isLoggedIn={isLoggedIn}
                         />
                     </>
                 )}
