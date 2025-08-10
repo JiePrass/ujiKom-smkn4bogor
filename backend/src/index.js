@@ -1,4 +1,5 @@
 require('dotenv').config()
+require('./cron/notification.cron')
 const express = require('express')
 const cors = require('cors')
 const { PrismaClient } = require('@prisma/client')
@@ -42,18 +43,9 @@ app.use('/events', eventRoutes)
 const registrationRoute = require('./routes/registration.route')
 app.use('/registration', registrationRoute)
 
-const cron = require('node-cron');
-const notificationService = require('./services/notification.service');
-
-// DELETE OLD NOTIFICATIONS
-cron.schedule('0 0 * * *', async () => {
-  try {
-    const result = await notificationService.deleteOldReadNotifications();
-    console.log(`Cron job: ${result.count} notifikasi lama dihapus`);
-  } catch (error) {
-    console.error('Cron job error:', error);
-  }
-});
+// NOTIFICATION
+const notificationRoutes = require('./routes/notification.route')
+app.use('/notification', notificationRoutes)
 
 // Port
 const PORT = process.env.PORT || 3000
