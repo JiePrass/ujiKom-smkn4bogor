@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { LayoutDashboard, LogOut, User } from "lucide-react";
 import { User as UserType } from "@/types/model";
+import { useAuth } from "@/context/authContext";
 
 interface ProfileDropdownProps {
     visible: boolean;
@@ -21,6 +22,7 @@ export default function ProfileDropdown({
 }: ProfileDropdownProps) {
     const router = useRouter();
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const { logout } = useAuth();
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -38,7 +40,7 @@ export default function ProfileDropdown({
     }, [visible, toggle]);
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
+        logout();
         router.push("/login");
     };
 

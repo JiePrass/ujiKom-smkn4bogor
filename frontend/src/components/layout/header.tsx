@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Menu } from "lucide-react";
 import Image from "next/image";
@@ -10,10 +10,9 @@ import SearchBar from "../shared/searchBar";
 import ProfileDropdown from "../shared/profileDropdown";
 import NotificationDropdown from "../shared/notificationDropdown";
 import MobileSidebar from "./mobile/mobileSidebar";
-import { getCurrentUser } from "@/lib/api/auth";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { User } from "@/types/model";
+import { useAuth } from "@/context/authContext"; // Ambil dari context
 
 const navLinks = [
     { key: "beranda", label: "Beranda", href: "/" },
@@ -28,12 +27,13 @@ export default function Header() {
     const [showNotif, setShowNotif] = useState(false);
     const [hideHeader, setHideHeader] = useState(false);
     const [lastScrollY, setLastScrollY] = useState(0);
+
     const pathname = usePathname();
+    const router = useRouter();
+    const ref = useRef(null);
+    const inView = useInView(ref, { once: true, amount: 0.2 });
 
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    console.log("User data:", user);
+    const { user, isLoggedIn } = useAuth(); // ✅ Ambil data dari Context
 
     const [notifications] = useState([
         "Event A akan dimulai besok.",
@@ -42,10 +42,6 @@ export default function Header() {
         "Event B telah selesai.",
     ]);
 
-    const router = useRouter();
-    const ref = useRef(null);
-    const inView = useInView(ref, { once: true, amount: 0.2 });
-
     const toggleMenu = () => setIsOpen(!isOpen);
 
     const handleNavigation = (path: string) => {
@@ -53,50 +49,23 @@ export default function Header() {
         setIsOpen(false);
     };
 
-    // Cek login & fetch user
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        const loggedIn = !!token && token !== "null" && token !== "undefined";
-        setIsLoggedIn(loggedIn);
-
-        const fetchUser = async () => {
-            if (loggedIn) {
-                try {
-                    const me = await getCurrentUser();
-                    setUser(me);
-                } catch (err) {
-                    console.error("Gagal mengambil data user:", err);
-                    localStorage.removeItem("token");
-                    setUser(null);
-                }
-            }
-        };
-
-        fetchUser();
-    }, []);
-
     // Lock scroll saat mobile menu terbuka
-    useEffect(() => {
+    if (typeof document !== "undefined") {
         document.body.classList.toggle("overflow-hidden", isOpen);
-    }, [isOpen]);
+    }
 
     // Sembunyikan header saat scroll ke bawah
-    useEffect(() => {
-        const handleScroll = () => {
+    if (typeof window !== "undefined") {
+        window.addEventListener("scroll", () => {
             const currentScrollY = window.scrollY;
-
             if (currentScrollY > lastScrollY && currentScrollY > 100) {
                 setHideHeader(true);
             } else {
                 setHideHeader(false);
             }
-
             setLastScrollY(currentScrollY);
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [lastScrollY]);
+        });
+    }
 
     return (
         <>
@@ -114,7 +83,7 @@ export default function Header() {
                     }}
                     className="container mx-auto px-6 md:px-0 py-3 flex items-center relative"
                 >
-                    {/* Kiri */}
+                    {/* Logo */}
                     <div className="flex items-center">
                         <Image
                             src="/images/SIMKAS.png"
@@ -126,7 +95,7 @@ export default function Header() {
                         />
                     </div>
 
-                    {/* Tengah */}
+                    {/* Menu tengah */}
                     <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:block">
                         <nav className="hidden md:flex gap-6">
                             {navLinks.map((link) => {
@@ -140,17 +109,19 @@ export default function Header() {
                                                 : "text-gray-700 hover:text-blue-600"
                                             }`}
                                     >
-                                        {link.key}
+                                        {link.label}
                                     </Link>
-
                                 );
                             })}
                         </nav>
                     </div>
 
-                    {/* Kanan */}
+                    {/* Menu kanan */}
                     <div className="ml-auto hidden md:flex items-center gap-4">
-                        <SearchBar value="" onChange={() => (console.log("NOT IMPLEMENT"))} />
+                        <SearchBar
+                            value=""
+                            onChange={() => console.log("NOT IMPLEMENT")}
+                        />
                         {isLoggedIn && user ? (
                             <>
                                 <ProfileDropdown
@@ -172,10 +143,7 @@ export default function Header() {
                             </>
                         ) : (
                             <>
-                                <Button
-                                    asChild
-                                    className="rounded-full"
-                                >
+                                <Button asChild className="rounded-full">
                                     <Link href="/login">Login</Link>
                                 </Button>
                                 <Button
@@ -189,7 +157,7 @@ export default function Header() {
                         )}
                     </div>
 
-                    {/* Mobile Menu Button */}
+                    {/* Tombol menu mobile */}
                     <div className="md:hidden flex space-x-4 items-center ml-auto">
                         <button onClick={toggleMenu}>
                             <Menu className="w-6 h-6" />
