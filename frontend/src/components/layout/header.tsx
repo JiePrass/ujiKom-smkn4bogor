@@ -1,20 +1,25 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Menu } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import DesktopNav from "../shared/desktopNav";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+
 import SearchBar from "../shared/searchBar";
 import ProfileDropdown from "../shared/profileDropdown";
 import NotificationDropdown from "../shared/notificationDropdown";
-import MobileMenu from "./mobileSidebar";
-import { getCurrentUser } from "../../api/auth";
+import MobileSidebar from "./mobile/mobileSidebar";
+import { getCurrentUser } from "@/lib/api/auth";
+import { Button } from "../ui/button";
+import Link from "next/link";
+import { User } from "@/types/model";
 
 const navLinks = [
-    { key: "Beranda", href: "/" },
-    { key: "Tentang", href: "/tentang" },
-    { key: "Event", href: "/event" },
-    { key: "Artikel", href: "/artikel" },
+    { key: "beranda", label: "Beranda", href: "/" },
+    { key: "tentang", label: "Tentang", href: "/tentang" },
+    { key: "event", label: "Event", href: "/event" },
+    { key: "artikel", label: "Artikel", href: "/artikel" },
 ];
 
 export default function Header() {
@@ -23,8 +28,13 @@ export default function Header() {
     const [showNotif, setShowNotif] = useState(false);
     const [hideHeader, setHideHeader] = useState(false);
     const [lastScrollY, setLastScrollY] = useState(0);
+    const pathname = usePathname();
 
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<User | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    console.log("User data:", user);
+
     const [notifications] = useState([
         "Event A akan dimulai besok.",
         "Sertifikat Anda tersedia.",
@@ -32,24 +42,25 @@ export default function Header() {
         "Event B telah selesai.",
     ]);
 
-    const navigate = useNavigate();
+    const router = useRouter();
     const ref = useRef(null);
     const inView = useInView(ref, { once: true, amount: 0.2 });
 
-    const token = localStorage.getItem("token");
-    const isLoggedIn = !!token && token !== "null" && token !== "undefined";
-
     const toggleMenu = () => setIsOpen(!isOpen);
 
-    const handleNavigation = (path) => {
-        navigate(path);
+    const handleNavigation = (path: string) => {
+        router.push(path);
         setIsOpen(false);
     };
 
-    // Fetch user data jika login
+    // Cek login & fetch user
     useEffect(() => {
+        const token = localStorage.getItem("token");
+        const loggedIn = !!token && token !== "null" && token !== "undefined";
+        setIsLoggedIn(loggedIn);
+
         const fetchUser = async () => {
-            if (isLoggedIn) {
+            if (loggedIn) {
                 try {
                     const me = await getCurrentUser();
                     setUser(me);
@@ -58,12 +69,11 @@ export default function Header() {
                     localStorage.removeItem("token");
                     setUser(null);
                 }
-            } else {
-                setUser(null);
             }
         };
+
         fetchUser();
-    }, [isLoggedIn]);
+    }, []);
 
     // Lock scroll saat mobile menu terbuka
     useEffect(() => {
@@ -102,19 +112,45 @@ export default function Header() {
                         hidden: { opacity: 0, y: -20 },
                         show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
                     }}
-                    className="container mx-auto px-6 md:px-0 py-3 flex justify-between items-center"
+                    className="container mx-auto px-6 md:px-0 py-3 flex items-center relative"
                 >
-                    <img
-                        src="/images/SIMKAS.png"
-                        alt="Logo"
-                        className="h-8 cursor-pointer"
-                        onClick={() => handleNavigation("/")}
-                    />
+                    {/* Kiri */}
+                    <div className="flex items-center">
+                        <Image
+                            src="/images/SIMKAS.png"
+                            alt="Logo"
+                            width={120}
+                            height={32}
+                            className="cursor-pointer"
+                            onClick={() => handleNavigation("/")}
+                        />
+                    </div>
 
-                    <DesktopNav navLinks={navLinks} onNavigate={handleNavigation} />
+                    {/* Tengah */}
+                    <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:block">
+                        <nav className="hidden md:flex gap-6">
+                            {navLinks.map((link) => {
+                                const isActive = pathname === link.href;
+                                return (
+                                    <Link
+                                        key={link.key}
+                                        href={link.href}
+                                        className={`text-sm font-medium transition-colors ${isActive
+                                                ? "text-blue-600 font-semibold"
+                                                : "text-gray-700 hover:text-blue-600"
+                                            }`}
+                                    >
+                                        {link.key}
+                                    </Link>
 
-                    <div className="hidden md:flex items-center gap-4">
-                        <SearchBar />
+                                );
+                            })}
+                        </nav>
+                    </div>
+
+                    {/* Kanan */}
+                    <div className="ml-auto hidden md:flex items-center gap-4">
+                        <SearchBar value="" onChange={() => (console.log("NOT IMPLEMENT"))} />
                         {isLoggedIn && user ? (
                             <>
                                 <ProfileDropdown
@@ -136,23 +172,25 @@ export default function Header() {
                             </>
                         ) : (
                             <>
-                                <button
-                                    onClick={() => handleNavigation("/login")}
-                                    className="text-sm px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                                <Button
+                                    asChild
+                                    className="rounded-full"
                                 >
-                                    Login
-                                </button>
-                                <button
-                                    onClick={() => handleNavigation("/register")}
-                                    className="text-sm px-4 py-2 border border-blue-600 text-blue-600 rounded-full hover:bg-blue-50"
+                                    <Link href="/login">Login</Link>
+                                </Button>
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    className="rounded-full border-blue-600 text-blue-600 hover:bg-blue-50"
                                 >
-                                    Register
-                                </button>
+                                    <Link href="/register">Register</Link>
+                                </Button>
                             </>
                         )}
                     </div>
 
-                    <div className="md:hidden flex space-x-4 items-center">
+                    {/* Mobile Menu Button */}
+                    <div className="md:hidden flex space-x-4 items-center ml-auto">
                         <button onClick={toggleMenu}>
                             <Menu className="w-6 h-6" />
                         </button>
@@ -170,10 +208,10 @@ export default function Header() {
                             exit={{ opacity: 0 }}
                             onClick={toggleMenu}
                         />
-                        <MobileMenu
+                        <MobileSidebar
+                            key="mobileSidebar"
                             navLinks={navLinks}
                             onClose={toggleMenu}
-                            onNavigate={handleNavigation}
                             userData={user}
                             isLoggedIn={isLoggedIn}
                         />

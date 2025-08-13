@@ -1,27 +1,49 @@
-// eslint-disable-next-line no-unused-vars
+"use client";
+
 import { motion } from "framer-motion";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
 import { Home, Info, Calendar, FileText, Bell, ChevronRight, X } from "lucide-react";
-import SearchBar from "./searchBar";
+import SearchBar from "../../shared/searchBar";
+import { useEffect, useState } from "react";
+import { User } from "@/types/model";
 
-export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, setShowNotifications }) {
-    const navigate = useNavigate();
-    const location = useLocation();
+interface MobileMenuProps {
+    navLinks: { key: string; href: string }[];
+    onClose: () => void;
+    userData: User | null;
+    isLoggedIn: boolean;
+    setShowNotifications: (value: boolean) => void;
+}
 
-    const getIsActive = (href) => location.pathname === href;
+export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, setShowNotifications }: MobileMenuProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [token, setToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            setToken(localStorage.getItem("token"));
+        }
+    }, []);
+
+    const getIsActive = (href: string) => pathname === href;
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/login");
+        if (typeof window !== "undefined") {
+            localStorage.removeItem("token");
+        }
+        router.push("/login");
     };
 
-    const icons = {
+    const icons: Record<string, React.ElementType> = {
         Beranda: Home,
         Tentang: Info,
         Event: Calendar,
         Artikel: FileText,
     };
-
 
     return (
         <motion.aside
@@ -35,41 +57,52 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
             }}
             className="fixed inset-y-0 right-0 w-72 bg-white z-50 shadow-lg flex flex-col"
         >
+            {/* Header */}
             <div className="flex justify-between items-center mb-6 px-6 pt-6">
-                <img
+                <Image
                     src="/images/SIMKAS.png"
                     alt="Logo"
-                    className="h-8 cursor-pointer"
+                    width={100}
+                    height={32}
+                    className="cursor-pointer"
+                    onClick={() => router.push("/")}
                 />
                 <button onClick={onClose}>
                     <X className="w-6 h-6" />
                 </button>
             </div>
 
-            {isLoggedIn && userData.user && (
+            {/* User Info */}
+            {isLoggedIn && userData && (
                 <Link
-                    to="/profile"
-                    className="flex w-full px-6 mb-6 items-center gap-2 mt-auto text-gray-700"
+                    href="/profile"
+                    className="flex w-full px-6 mb-6 items-center gap-2 text-gray-700"
                     onClick={onClose}
                 >
-                    <img
+                    <Image
                         src={
-                            userData.user.profilePicture
-                                ? `${import.meta.env.VITE_API_BASE_URL}${userData.user.profilePicture}`
+                            userData.profilePicture
+                                ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${userData.profilePicture}`
                                 : "/images/default-profile.png"
                         }
                         alt="User"
-                        className="w-12 h-12 rounded-full object-cover"
+                        width={48}
+                        height={48}
+                        className="rounded-full object-cover"
                     />
                     <div className="flex flex-col">
-                        <span className="text-lg font-semibold">{userData.user.fullName}</span>
-                        <span className="text-sm">{userData.user.email}</span>
+                        <span className="text-lg font-semibold">{userData.fullName}</span>
+                        <span className="text-sm">{userData.email}</span>
                     </div>
                 </Link>
             )}
 
-            <SearchBar className="mx-6 mb-6" />
+            {/* Search */}
+            <div className="px-6 mb-6">
+                <SearchBar value="" onChange={() => (console.log("TES"))} />
+            </div>
 
+            {/* Navigation */}
             <nav className="flex flex-col gap-3 font-semibold">
                 <span className="text-gray-500 px-6">Menu</span>
                 <div className="space-y-0.5 px-4 relative">
@@ -95,11 +128,11 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                         return (
                             <Link
                                 key={item.key}
-                                to={item.href}
+                                href={item.href}
                                 onClick={onClose}
                                 className={`font-medium flex items-center gap-2 px-4 rounded-lg py-2 transition-colors ${getIsActive(item.href)
-                                    ? "text-blue-600 bg-gray-100"
-                                    : "text-gray-700 hover:text-blue-600 hover:bg-gray-100"
+                                        ? "text-blue-600 bg-gray-100"
+                                        : "text-gray-700 hover:text-blue-600 hover:bg-gray-100"
                                     }`}
                             >
                                 {Icon && <Icon className="w-5 h-5 text-gray-500" />}
@@ -108,7 +141,7 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                         );
                     })}
 
-                    {isLoggedIn && userData.user && (
+                    {isLoggedIn && userData && (
                         <button
                             onClick={() => setShowNotifications(true)}
                             className="font-medium w-full text-gray-700 flex justify-between px-4 rounded-lg py-2 transition-colors hover:text-blue-600 hover:bg-gray-100"
@@ -123,8 +156,9 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                 </div>
             </nav>
 
+            {/* Footer */}
             <div className="flex h-full items-end p-6">
-                {isLoggedIn && userData.user ? (
+                {isLoggedIn && userData ? (
                     <button
                         onClick={handleLogout}
                         className="text-sm px-4 w-full py-2 border border-red-500 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition-colors ease-in-out text-center"
@@ -134,13 +168,13 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                 ) : (
                     <div className="flex gap-2 justify-center w-full">
                         <Link
-                            to="/login"
+                            href="/login"
                             className="text-sm px-4 w-1/2 py-2 bg-blue-600 text-white rounded-full transition-colors ease-in-out hover:bg-blue-700 text-center"
                         >
                             Login
                         </Link>
                         <Link
-                            to="/register"
+                            href="/register"
                             className="text-sm px-4 py-2 w-1/2 border border-blue-600 text-blue-600 transition-colors ease-in-out rounded-full hover:bg-blue-50 text-center"
                         >
                             Register
@@ -149,5 +183,5 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                 )}
             </div>
         </motion.aside>
-    )
+    );
 }
