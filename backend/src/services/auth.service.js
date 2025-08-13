@@ -99,6 +99,7 @@ exports.login = async ({ email, password }) => {
 
     const token = generateToken({
         id: user.id,
+        role: user.role,
     })
 
     return {

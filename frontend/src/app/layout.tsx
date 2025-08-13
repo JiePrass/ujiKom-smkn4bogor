@@ -24,7 +24,7 @@ export default function RootLayout({
       <AuthProvider>
         <body className={`${inter.variable} antialiased`}>
           <Header />
-          <main>
+          <main className="mt-24 mx-auto container">
             {children}
           </main>
         </body>
