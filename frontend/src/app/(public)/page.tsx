@@ -35,7 +35,7 @@ export default function Home() {
   return (
     <>
       <h2 className="text-2xl font-bold mb-6">Event Terbaru</h2>
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-4 gap-8">
         {events.slice(0, 6).map((event) => (
           <EventCard key={event.id} event={event} />
         ))}
