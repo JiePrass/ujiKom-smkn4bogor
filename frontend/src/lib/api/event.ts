@@ -27,7 +27,7 @@ export const createEvent = async (data: {
     time: string; // format HH:mm
     location: string;
     price?: number;
-    flyer?: File;
+    flyer: File;
 }) => {
     const formData = new FormData();
     formData.append("title", data.title);

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/header";
 import { AuthProvider } from "@/context/authContext";
 
 const inter = Inter({
@@ -14,19 +13,12 @@ export const metadata: Metadata = {
   description: "Aplikasi untuk mengelola kegiatan dan pendaftaran peserta",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <AuthProvider>
         <body className={`${inter.variable} antialiased`}>
-          <Header />
-          <main className="mt-24 mx-auto container">
-            {children}
-          </main>
+          {children}
         </body>
       </AuthProvider>
     </html>

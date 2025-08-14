@@ -1,12 +1,12 @@
-// app/register/page.tsx
-"use client";
+'use client';
 
 import { useState } from "react";
-import { registerUser, verifyEmail } from "@/lib/api/auth"; 
+import { registerUser, verifyEmail } from "@/lib/api/auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import OtpModal from "@/components/shared/otpModal";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 interface FormData {
     fullName: string;
@@ -15,6 +15,10 @@ interface FormData {
     address: string;
     education: string;
     password: string;
+}
+
+interface ApiError {
+    error: string;
 }
 
 export default function RegisterPage() {
@@ -43,8 +47,12 @@ export default function RegisterPage() {
             const res = await registerUser(formData);
             alert(res.message);
             setIsOtpModalOpen(true);
-        } catch (err: any) {
-            alert(err.response?.data?.error || "Gagal mendaftar");
+        } catch (err: unknown) {
+            if (axios.isAxiosError<ApiError>(err)) {
+                alert(err.response?.data?.error || "Gagal mendaftar");
+            } else {
+                alert("Gagal mendaftar");
+            }
         } finally {
             setLoading(false);
         }
@@ -60,8 +68,12 @@ export default function RegisterPage() {
             setIsOtpModalOpen(false);
             router.push("/login");
             return true;
-        } catch (err: any) {
-            alert(err.response?.data?.error || "OTP salah");
+        } catch (err: unknown) { 
+            if (axios.isAxiosError<ApiError>(err)) {
+                alert(err.response?.data?.error || "OTP salah");
+            } else {
+                alert("OTP salah");
+            }
             return false;
         }
     };
@@ -71,42 +83,12 @@ export default function RegisterPage() {
             <h1 className="text-2xl font-bold mb-4">Register</h1>
 
             <form onSubmit={handleRegister} className="space-y-4">
-                <Input
-                    type="text"
-                    name="fullName"
-                    placeholder="Full Name"
-                    onChange={handleChange}
-                />
-                <Input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    onChange={handleChange}
-                />
-                <Input
-                    type="text"
-                    name="phone"
-                    placeholder="Phone"
-                    onChange={handleChange}
-                />
-                <Input
-                    type="text"
-                    name="address"
-                    placeholder="Address"
-                    onChange={handleChange}
-                />
-                <Input
-                    type="text"
-                    name="education"
-                    placeholder="Education"
-                    onChange={handleChange}
-                />
-                <Input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    onChange={handleChange}
-                />
+                <Input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} />
+                <Input type="email" name="email" placeholder="Email" onChange={handleChange} />
+                <Input type="text" name="phone" placeholder="Phone" onChange={handleChange} />
+                <Input type="text" name="address" placeholder="Address" onChange={handleChange} />
+                <Input type="text" name="education" placeholder="Education" onChange={handleChange} />
+                <Input type="password" name="password" placeholder="Password" onChange={handleChange} />
                 <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Loading..." : "Register"}
                 </Button>
