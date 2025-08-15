@@ -49,7 +49,6 @@ exports.registerToEvent = async (eventId, req, user) => {
         }
 })
 
-
     return { message: 'Pendaftaran berhasil', registration }
 }
 
@@ -86,5 +85,12 @@ exports.updatePaymentStatus = async (registrationId, status) => {
         where: { id: parseInt(registrationId) },
         data: updateData
     })
+}
+
+exports.checkUserRegistration = async (eventId, userId) => {
+    const registration = await prisma.registration.findFirst({
+        where: { eventId: parseInt(eventId), userId }
+    })
+    return !!registration // true jika sudah daftar
 }
 

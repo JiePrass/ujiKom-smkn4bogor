@@ -29,4 +29,8 @@ router.patch(
     registrationController.updatePaymentStatus
 )
 
+// Check if user is registered for an event
+router.get(
+    '/:eventId/check', requireLogin, registrationController.checkUserRegistration)
+
 module.exports = router

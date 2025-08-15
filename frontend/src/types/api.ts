@@ -34,6 +34,15 @@ export interface GetEventDetailResponse extends Event {
     registrations?: Registration[];
 }
 
+export interface EventDetail extends Omit<Event, "createdBy"> {
+    createdBy: {
+        id: number;
+        fullName: string;
+        email: string;
+    };
+}
+
+
 export type CreateEventResponse = Event;
 export type UpdateEventResponse = Event;
 export interface DeleteEventResponse {

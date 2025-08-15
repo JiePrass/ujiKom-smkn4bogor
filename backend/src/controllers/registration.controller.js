@@ -33,4 +33,17 @@ exports.updatePaymentStatus = async (req, res) => {
     }
 }
 
+exports.checkUserRegistration = async (req, res) => {
+    const { eventId } = req.params
+    const userId = req.user.id
+
+    try {
+        const isRegistered = await registrationService.checkUserRegistration(eventId, userId)
+        res.status(200).json({ isRegistered })
+    } catch (error) {
+        res.status(500).json({ error: error.message })
+    }
+}
+
+
 
