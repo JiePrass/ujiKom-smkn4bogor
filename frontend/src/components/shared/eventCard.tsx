@@ -7,11 +7,22 @@ import { slugify } from "@/lib/utils/slugify";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Event } from "@/types/model";
 import { Button } from "../ui/button";
-import { Calendar, Fullscreen, MapPin } from "lucide-react";
+import { Calendar, Edit, Fullscreen, MapPin, Trash2 } from "lucide-react";
 import ImageFullscreenModal from "./imageFullScreenModal";
+import { deleteEvent } from "@/lib/api/event";
+import EditEventModal from "./editEventModal";
+import { AnimatePresence, motion } from "framer-motion";
 
-export default function EventCard({ event }: { event: Event }) {
+interface EventCardProps {
+    event: Event;
+    isAdmin?: boolean;
+    onEventUpdated?: () => void;
+}
+
+export default function EventCard({ event, isAdmin, onEventUpdated }: EventCardProps) {
+    const [showEdit, setShowEdit] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
     const router = useRouter();
 
     const formattedDate = new Date(event.date).toLocaleDateString("id-ID", {
@@ -25,10 +36,23 @@ export default function EventCard({ event }: { event: Event }) {
         router.push(`/events/${slug}-${event.id}`);
     };
 
+    const handleDelete = async () => {
+        if (confirm(`Hapus event "${event.title}"?`)) {
+            try {
+                await deleteEvent(event.id);
+                alert("Event berhasil dihapus.");
+                onEventUpdated?.();
+            } catch (error) {
+                console.error("Gagal menghapus event:", error);
+                alert("Gagal menghapus event.");
+            }
+        }
+    };
+
     return (
         <>
             <Card className="flex flex-col pt-[16px] px-[16px] pb-[24px] h-full rounded-[12px] gap-[20px]">
-                <div className="flex w-full bg-gray-100 rounded-[4px] relative">
+                <div className="flex w-full bg-gray-100 rounded-[4px] relative" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
                     {event.flyerUrl ? (
                         <Image
                             src={`${process.env.NEXT_PUBLIC_API_URL}${event.flyerUrl}`}
@@ -43,9 +67,49 @@ export default function EventCard({ event }: { event: Event }) {
                         </div>
                     )}
 
-                    <span className="absolute top-2 bg-white rounded-full right-2 text-sm px-3 py-1 font-medium">
-                        {event.price && event.price > 0 ? `Rp ${event.price.toLocaleString()}` : "Free"}
-                    </span>
+                    <div className="absolute top-2 right-2 flex items-center">
+                        <AnimatePresence mode="wait">
+                            {(!isHovered || !isAdmin) && (
+                                <motion.span
+                                    key="price-label"
+                                    initial={{ opacity: 0, x: 5 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 5 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="bg-white rounded-full text-sm px-3 py-1 font-medium shadow"
+                                >
+                                    {event.price && event.price > 0
+                                        ? `Rp ${event.price.toLocaleString()}`
+                                        : "Free"}
+                                </motion.span>
+                            )}
+
+                            {isHovered && isAdmin && (
+                                <motion.div
+                                    key="admin-buttons"
+                                    initial={{ opacity: 0, x: 5 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 5 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="flex gap-2"
+                                >
+                                    <Button
+                                        onClick={() => setShowEdit(true)}
+                                        className="rounded-full w-8 h-8 bg-white text-black hover:bg-gray-200"
+                                    >
+                                        <Edit size={16} />
+                                    </Button>
+                                    <Button
+                                        onClick={handleDelete}
+                                        className="rounded-full w-8 h-8 bg-white text-red-500 hover:bg-gray-200"
+                                    >
+                                        <Trash2 size={16} />
+                                    </Button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
                     <Button
                         onClick={() => setIsFullscreen(true)}
                         className="absolute bottom-2 right-2 rounded-full w-8 h-8 bg-white text-black hover:bg-gray-200"
@@ -79,6 +143,14 @@ export default function EventCard({ event }: { event: Event }) {
                 alt={event.title}
                 onClose={() => setIsFullscreen(false)}
             />
+
+            {showEdit && (
+                <EditEventModal
+                    event={event}
+                    onClose={() => setShowEdit(false)}
+                    onUpdated={onEventUpdated}
+                />
+            )}
         </>
     );
 }

@@ -171,7 +171,7 @@ export default function CreateEventPage() {
                                     src={flyerPreview}
                                     alt="Preview flyer"
                                     fill
-                                    className="object-cover"
+                                    className="object-contain"
                                 />
                                 <button
                                     type="button"
