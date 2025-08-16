@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import { getEventById } from "@/lib/api/event";
-import { registerForEvent } from "@/lib/api/registration";
+import { attendEvent, getEventById } from "@/lib/api/event";
+import { registerForEvent, checkUserRegistration } from "@/lib/api/registration";
 import { useAuth } from "@/context/authContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { checkUserRegistration } from "@/lib/api/registration";
 import RegistrationModal from "@/components/shared/registrationModal";
+import OtpModal from "@/components/shared/otpModal";
 
 interface EventType {
     id: number;
@@ -37,9 +37,11 @@ export default function EventDetailPage() {
     const [event, setEvent] = useState<EventType | null>(null);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isOtpOpen, setIsOtpOpen] = useState(false); // ✅ buat modal OTP
     const [paymentProof, setPaymentProof] = useState<File | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [hasRegistered, setHasRegistered] = useState(false);
+    const [hasAttended, setHasAttended] = useState(false);
 
     useEffect(() => {
         if (!slug) return;
@@ -54,11 +56,9 @@ export default function EventDetailPage() {
 
         const fetchEvent = async () => {
             try {
-                // 1️⃣ Ambil detail event
                 const data = await getEventById(id);
                 setEvent(data);
 
-                // 2️⃣ Cek status pendaftaran user (kalau sudah login)
                 if (isLoggedIn) {
                     try {
                         const res = await checkUserRegistration(id);
@@ -78,6 +78,21 @@ export default function EventDetailPage() {
         fetchEvent();
     }, [slug, router, isLoggedIn]);
 
+    // ✅ fungsi verifikasi OTP
+    const handleVerifyOtp = async (otp: string) => {
+        if (!event) return false;
+        try {
+            await attendEvent(event.id, otp); // pastikan attendEvent bisa menerima token
+            setHasAttended(true);
+            toast.success("Kehadiran berhasil dicatat!");
+            setIsOtpOpen(false);
+            return true;
+        } catch (err) {
+            console.error(err);
+            toast.error("Token salah atau sudah dipakai.");
+            return false;
+        }
+    };
 
     if (loading || authLoading) return <p>Loading...</p>;
     if (!event) return <p>Event tidak ditemukan</p>;
@@ -110,7 +125,6 @@ export default function EventDetailPage() {
             await registerForEvent(event.id, paymentProof || undefined);
             setIsModalOpen(false);
             setHasRegistered(true);
-
             toast.success("Berhasil mendaftar ke event!");
         } catch (err) {
             console.error(err);
@@ -172,17 +186,52 @@ export default function EventDetailPage() {
                 </CardContent>
             </Card>
 
-            {/* Tombol Daftar */}
-            <Button
-                className="w-full rounded-full"
-                onClick={handleRegisterClick}
-                disabled={hasRegistered}
-            >
-                {hasRegistered ? "Sudah Mendaftar Event Ini" : "Daftar Sekarang"}
-            </Button>
+            {/* Tombol Daftar / Attend */}
+            {!hasRegistered ? (
+                <Button className="w-full rounded-full" onClick={handleRegisterClick}>
+                    Daftar Sekarang
+                </Button>
+            ) : (
+                <div className="flex flex-col gap-3">
+                    <Button className="w-full rounded-full" disabled>
+                        ✅ Sudah Mendaftar Event Ini
+                    </Button>
+
+                    {!hasAttended && (
+                        <Button
+                            className="w-full rounded-full bg-green-600 hover:bg-green-700"
+                            onClick={() => setIsOtpOpen(true)} // ✅ buka OTP modal
+                        >
+                            Hadir Sekarang
+                        </Button>
+                    )}
+
+                    {hasAttended && (
+                        <Button className="w-full rounded-full bg-gray-400" disabled>
+                            ✅ Kehadiran Tercatat
+                        </Button>
+                    )}
+                </div>
+            )}
 
             {/* Modal Registrasi */}
-            <RegistrationModal isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} setPaymentProof={setPaymentProof} handleSubmit={handleSubmit} submitting={submitting} event={event}/>
+            <RegistrationModal
+                isModalOpen={isModalOpen}
+                setIsModalOpen={setIsModalOpen}
+                setPaymentProof={setPaymentProof}
+                handleSubmit={handleSubmit}
+                submitting={submitting}
+                event={event}
+            />
+
+            {/* Modal OTP untuk presensi */}
+            {isOtpOpen && (
+                <OtpModal
+                    onClose={() => setIsOtpOpen(false)}
+                    onSubmit={handleVerifyOtp}
+                    length={undefined}
+                />
+            )}
         </div>
     );
 }

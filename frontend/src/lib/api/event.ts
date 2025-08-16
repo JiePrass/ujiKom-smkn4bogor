@@ -89,7 +89,10 @@ export const deleteEvent = async (id: number) => {
 /* =====================================================
     PRESENSI peserta
 ===================================================== */
-export const attendEvent = async (eventId: number) => {
-    const res = await axiosInstance.post(`/events/${eventId}/attend`);
+export const attendEvent = async (eventId: number, otp: string) => {
+    const res = await axiosInstance.post(`/events/${eventId}/attend`, {
+        token: otp,
+    });
     return res.data;
 };
+

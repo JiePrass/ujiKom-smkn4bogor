@@ -68,7 +68,7 @@ export default function RegisterPage() {
             setIsOtpModalOpen(false);
             router.push("/login");
             return true;
-        } catch (err: unknown) { 
+        } catch (err: unknown) {
             if (axios.isAxiosError<ApiError>(err)) {
                 alert(err.response?.data?.error || "OTP salah");
             } else {
@@ -99,6 +99,9 @@ export default function RegisterPage() {
                     onClose={() => setIsOtpModalOpen(false)}
                     onSubmit={handleVerifyOtp}
                     email={formData.email}
+                    redirectOnSuccess="/login"
+                    title="Verifikasi Email"
+                    description="Masukkan kode OTP untuk mengaktifkan akun."
                 />
             )}
         </div>
