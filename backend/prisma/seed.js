@@ -121,7 +121,7 @@ await prisma.event.createMany({
             data: {
             userId: user.id,
             eventId: event.id,
-            status: 'approved',
+            status: 'APPROVED',
             },
         });
 

@@ -37,7 +37,7 @@ export default function EventDetailPage() {
     const [event, setEvent] = useState<EventType | null>(null);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isOtpOpen, setIsOtpOpen] = useState(false); // ✅ buat modal OTP
+    const [isOtpOpen, setIsOtpOpen] = useState(false);
     const [paymentProof, setPaymentProof] = useState<File | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [hasRegistered, setHasRegistered] = useState(false);

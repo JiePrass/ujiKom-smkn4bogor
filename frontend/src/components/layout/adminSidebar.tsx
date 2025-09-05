@@ -1,10 +1,9 @@
 import * as React from "react";
-import { useAuth } from "@/context/authContext";
 import {
-    Settings,
     LayoutDashboard,
     Calendar,
     Newspaper,
+    FileBadge
 } from "lucide-react";
 
 import { NavMain } from "@/components/shared/adminSidebar/navMain";
@@ -12,7 +11,6 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } fr
 import Image from "next/image";
 
 export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const { user } = useAuth();
 
     // Menu navigasi khusus admin
     const navMain = [
@@ -41,10 +39,10 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
             ]
         },
         {
-            title: "Pengaturan",
-            url: "/admin/settings",
-            icon: Settings,
-        }
+            title: "Sertifikat",
+            url: "/admin/certificate",
+            icon: FileBadge,
+        },
     ]
 
     return (

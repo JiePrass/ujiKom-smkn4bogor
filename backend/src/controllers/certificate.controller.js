@@ -4,13 +4,9 @@ exports.bulkUploadCertificates = async (req, res) => {
     try {
         const { eventId } = req.params
         const zipPath = req.file?.path
-
-        if (!zipPath) {
-            return res.status(400).json({ error: 'File ZIP tidak ditemukan.' })
-        }
+        if (!zipPath) return res.status(400).json({ error: 'File ZIP tidak ditemukan.' })
 
         const result = await certificateService.processBulkUpload(eventId, zipPath)
-
         res.status(200).json({
             message: 'Proses upload selesai',
             matched: result.matchedCount,
@@ -26,7 +22,6 @@ exports.getUnmatchedFiles = async (req, res) => {
     try {
         const { eventId } = req.params
         const unmatched = await certificateService.getUnmatchedFiles(eventId)
-
         res.status(200).json({ unmatched })
     } catch (error) {
         console.error(error)
@@ -36,16 +31,28 @@ exports.getUnmatchedFiles = async (req, res) => {
 
 exports.mapCertificates = async (req, res) => {
     try {
+        const { eventId } = req.params
         const mappings = req.body // [{ filename, registrationId }]
         if (!Array.isArray(mappings) || mappings.length === 0) {
             return res.status(400).json({ error: 'Data mapping tidak valid.' })
         }
 
-        await certificateService.mapCertificates(mappings)
-
+        await certificateService.mapCertificates(eventId, mappings)
         res.status(200).json({ message: 'Mapping sertifikat berhasil disimpan.' })
     } catch (error) {
         console.error(error)
         res.status(500).json({ error: error.message })
     }
 }
+
+exports.getCertificatesByEvent = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const data = await certificateService.getCertificatesByEvent(eventId);
+        res.json(data);
+    } catch (err) {
+        console.error("Error getCertificatesByEvent:", err);
+        res.status(500).json({ error: "Gagal mengambil data sertifikat" });
+    }
+};
+

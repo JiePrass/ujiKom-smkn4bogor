@@ -55,9 +55,19 @@ exports.registerToEvent = async (eventId, req, user) => {
 
 exports.getRegistrationsByEvent = async (eventId) => {
     return await prisma.registration.findMany({
-        where: { eventId: parseInt(eventId) }
+        where: { eventId: parseInt(eventId) },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    fullName: true,
+                    email: true
+                }
+            }
+        }
     })
 }
+
 
 exports.updatePaymentStatus = async (registrationId, status) => {
     if (!['PENDING', 'APPROVED', 'REJECTED'].includes(status)) {

@@ -24,10 +24,16 @@ router.get(
 
 // Simpan mapping manual untuk unmatched files
 router.post(
-    '/map',
+    '/map/:eventId',
     requireLogin,
     requireRole('ADMIN'),
     certificateController.mapCertificates
 )
+
+// Ambil Sertifikat
+router.get("/:eventId", 
+    requireLogin, requireRole('ADMIN'), 
+    certificateController.getCertificatesByEvent
+);
 
 module.exports = router

@@ -4,46 +4,56 @@ const path = require('path')
 const fs = require('fs')
 const AdmZip = require('adm-zip')
 
+const baseTempExtractDir = path.join(__dirname, '../../uploads/temp_extract')
+const certificatesDir = path.join(__dirname, '../../uploads/certificates')
+
+function ensureDir(dir) {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+}
+
+function listFilesOnly(dir) {
+    if (!fs.existsSync(dir)) return []
+    return fs.readdirSync(dir).filter(f => {
+        try {
+            return fs.statSync(path.join(dir, f)).isFile()
+        } catch {
+            return false
+        }
+    })
+}
+
 exports.processBulkUpload = async (eventId, zipPath) => {
-    const tempExtractDir = path.join(__dirname, '../../uploads/temp_extract')
+    const eventTempDir = path.join(baseTempExtractDir, String(eventId))
 
-    // Pastikan folder ekstrak ada
-    if (!fs.existsSync(tempExtractDir)) {
-        fs.mkdirSync(tempExtractDir, { recursive: true })
-    }
+    // Bersihkan folder temp event sebelum ekstrak ZIP baru
+    fs.rmSync(eventTempDir, { recursive: true, force: true })
+    ensureDir(eventTempDir)
 
-    // Ekstrak ZIP
+    // Ekstrak ZIP ke folder event
     const zip = new AdmZip(zipPath)
-    zip.extractAllTo(tempExtractDir, true)
+    zip.extractAllTo(eventTempDir, true)
 
     // Hapus file ZIP asli setelah ekstrak
     fs.unlinkSync(zipPath)
 
-    const allFiles = fs.readdirSync(tempExtractDir)
+    const allFiles = listFilesOnly(eventTempDir)
     let matchedCount = 0
     const unmatchedFiles = []
 
     for (const file of allFiles) {
-        const token = path.parse(file).name // ambil nama file tanpa ekstensi
-        const filePath = path.join(tempExtractDir, file)
+        const token = path.parse(file).name   // nama file tanpa ekstensi
+        const filePath = path.join(eventTempDir, file)
 
         const registration = await prisma.registration.findFirst({
-            where: {
-                eventId: parseInt(eventId),
-                token: token
-            }
+            where: { eventId: parseInt(eventId), token }
         })
 
         if (registration) {
-            // Pindahkan file ke folder certificates
-            const destFolder = path.join(__dirname, '../../uploads/certificates')
-            if (!fs.existsSync(destFolder)) fs.mkdirSync(destFolder, { recursive: true })
-
+            ensureDir(certificatesDir)
             const destFileName = `${registration.id}_${file}`
-            const destPath = path.join(destFolder, destFileName)
+            const destPath = path.join(certificatesDir, destFileName)
             fs.renameSync(filePath, destPath)
 
-            // Simpan ke DB
             await prisma.certificate.create({
                 data: {
                     registrationId: registration.id,
@@ -55,7 +65,8 @@ exports.processBulkUpload = async (eventId, zipPath) => {
         } else {
             unmatchedFiles.push({
                 filename: file,
-                previewUrl: `/temp_extract/${file}`
+                // ⬇️ gunakan path di bawah /uploads agar bisa diakses dari FE
+                previewUrl: `/uploads/temp_extract/${eventId}/${file}`
             })
         }
     }
@@ -63,46 +74,60 @@ exports.processBulkUpload = async (eventId, zipPath) => {
     return { matchedCount, unmatchedFiles }
 }
 
-const tempExtractDir = path.join(__dirname, '../../uploads/temp_extract')
-const certificatesDir = path.join(__dirname, '../../uploads/certificates')
-
 exports.getUnmatchedFiles = async (eventId) => {
-    // Baca file dari folder temp_extract
-    if (!fs.existsSync(tempExtractDir)) return []
-
-    const files = fs.readdirSync(tempExtractDir)
-
-    // Hanya kirim info filename & previewUrl
+    const eventTempDir = path.join(baseTempExtractDir, String(eventId))
+    const files = listFilesOnly(eventTempDir)
     return files.map(file => ({
         filename: file,
-        previewUrl: `/temp_extract/${file}`
+        previewUrl: `/uploads/temp_extract/${eventId}/${file}`
     }))
 }
 
-exports.mapCertificates = async (mappings) => {
-    if (!fs.existsSync(certificatesDir)) {
-        fs.mkdirSync(certificatesDir, { recursive: true })
-    }
+exports.mapCertificates = async (eventId, mappings) => {
+    const eventTempDir = path.join(baseTempExtractDir, String(eventId))
+    ensureDir(certificatesDir)
 
     for (const map of mappings) {
-        const sourcePath = path.join(tempExtractDir, map.filename)
+        const sourcePath = path.join(eventTempDir, map.filename)
         if (!fs.existsSync(sourcePath)) {
-            console.warn(`File ${map.filename} tidak ditemukan di temp_extract`)
+            console.warn(`File ${map.filename} tidak ditemukan di temp_extract/${eventId}`)
             continue
         }
 
         const destFileName = `${map.registrationId}_${map.filename}`
         const destPath = path.join(certificatesDir, destFileName)
-
-        // Pindahkan file
         fs.renameSync(sourcePath, destPath)
 
-        // Simpan ke DB
-        await prisma.certificate.create({
-            data: {
+        await prisma.certificate.upsert({
+            where: { registrationId: parseInt(map.registrationId) },
+            update: { url: `/uploads/certificates/${destFileName}` },
+            create: {
                 registrationId: parseInt(map.registrationId),
                 url: `/uploads/certificates/${destFileName}`
             }
         })
+
     }
+
+    try {
+        if (fs.existsSync(eventTempDir) && listFilesOnly(eventTempDir).length === 0) {
+            fs.rmSync(eventTempDir, { recursive: true, force: true })
+        }
+    } catch { }
 }
+
+exports.getCertificatesByEvent = async (eventId) => {
+    return await prisma.certificate.findMany({
+        where: { registration: { eventId: parseInt(eventId) } },
+        include: {
+            registration: {
+                select: {
+                    id: true,
+                    user: { select: { fullName: true, email: true } },
+                },
+            },
+        },
+        orderBy: { id: "desc" },
+    });
+};
+
