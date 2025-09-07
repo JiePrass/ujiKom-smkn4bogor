@@ -23,7 +23,6 @@ const navLinks = [
 
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false);
-    const [showProfile, setShowProfile] = useState(false);
     const [showNotif, setShowNotif] = useState(false);
     const [hideHeader, setHideHeader] = useState(false);
     const [lastScrollY, setLastScrollY] = useState(0);
@@ -71,7 +70,7 @@ export default function Header() {
         <>
             <header
                 className={`z-50 fixed top-0 left-0 w-full bg-white transition-transform duration-300 ${hideHeader ? "-translate-y-full" : "translate-y-0"
-                    } shadow`}
+                    }`}
             >
                 <motion.div
                     ref={ref}
@@ -126,18 +125,12 @@ export default function Header() {
                             <>
                                 <ProfileDropdown
                                     userData={user}
-                                    visible={showProfile}
-                                    toggle={() => {
-                                        setShowProfile(!showProfile);
-                                        setShowNotif(false);
-                                    }}
                                 />
                                 <NotificationDropdown
                                     notifications={notifications}
                                     visible={showNotif}
                                     toggle={() => {
                                         setShowNotif(!showNotif);
-                                        setShowProfile(false);
                                     }}
                                 />
                             </>

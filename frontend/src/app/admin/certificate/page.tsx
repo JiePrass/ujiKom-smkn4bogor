@@ -14,8 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 
-import CertificatesTable from "@/components/shared/certificateTable";
-import UnmatchedTable from "@/components/shared/unmatchedTable";
+import CertificatesTable from "@/components/shared/table/certificateTable";
+import UnmatchedTable from "@/components/shared/table/unmatchedTable";
 import EventSelector from "@/components/shared/eventSelector";
 
 // 🔹 Types

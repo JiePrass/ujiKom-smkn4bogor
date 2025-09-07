@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { getAllEvents } from "@/lib/api/event";
 import { Event } from "@/types/model";
 import EventCard from "@/components/shared/eventCard";
+import { HeroSection } from "@/components/landing/hero";
+import { FeatureSection } from "@/components/landing/feature";
 
 
 export default function Home() {
@@ -34,6 +36,8 @@ export default function Home() {
 
   return (
     <>
+      <HeroSection />
+      <FeatureSection />
       <h2 className="text-2xl font-bold mb-6">Event Terbaru</h2>
       <div className="grid md:grid-cols-4 gap-8">
         {events.slice(0, 6).map((event) => (
