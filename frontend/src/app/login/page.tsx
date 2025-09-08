@@ -1,84 +1,119 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/context/authContext";
-import useRedirectIfAuth from "@/lib/hooks/useRedirectIfAuth";
-import { AxiosError } from "axios";
+import { useEffect, useState } from "react"
+import Image from "next/image"
+import { motion, AnimatePresence } from "framer-motion"
+import { LoginForm } from "@/components/shared/loginForm"
 
-interface LoginFormData {
-    email: string;
-    password: string;
-}
+const slides = [
+    {
+        bg: "/images/feature-1.png",
+        logo: "/images/SIMKAS.png",
+        title: "Mulai Hidup Sehat dan Sejahtera Bersama Kami",
+        desc: "Mulai Hidup Sehat dan Sejahtera Bersama Kami",
+    },
+    {
+        bg: "/images/feature-2.png",
+        logo: "/images/SIMKAS.png",
+        title: "Aksi Nyata untuk Bumi Hijau",
+        desc: "Matikan lampu saat tidak digunakan dan kurangi jejak karbon mulai dari rumah.",
+    },
+    {
+        bg: "/images/feature-3.png",
+        logo: "/images/SIMKAS.png",
+        title: "Bersama Kurangi Emisi, Raih Masa Depan Cerah",
+        desc: "Setiap aksi kecilmu adalah investasi bagi generasi mendatang.",
+    },
+]
 
 export default function LoginPage() {
-    useRedirectIfAuth();
+    const [current, setCurrent] = useState(0)
 
-    const [formData, setFormData] = useState<LoginFormData>({
-        email: "",
-        password: ""
-    });
-    const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
-    const router = useRouter();
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    };
-
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            await login(formData.email, formData.password);
-            router.push("/");
-        } catch (err: unknown) {
-            let message = "Login gagal";
-
-            if (err instanceof AxiosError) {
-                message = err.response?.data?.error || message;
-            }
-
-            alert(message);
-        } finally {
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrent((prev) => (prev + 1) % slides.length)
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [])
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-50">
-            <Card className="w-full max-w-md shadow-lg">
-                <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        <Input
-                            type="email"
-                            name="email"
-                            placeholder="Email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
+        <div className="grid min-h-svh lg:grid-cols-12">
+            <div className="flex flex-col gap-4 p-6 md:p-8 lg:col-span-7">
+                <div className="flex justify-center md:justify-start">
+                    <Image
+                        src="/images/SIMKAS.png"
+                        alt="Main Logo"
+                        width={128}
+                        height={128}
+                    />
+                </div>
+                <div className="flex flex-1 items-center justify-center">
+                    <div className="w-full max-w-sm">
+                        <LoginForm />
+                    </div>
+                </div>
+            </div>
+
+            <div className="relative hidden lg:block lg:col-span-5 overflow-hidden">
+                <AnimatePresence mode="sync">
+                    <motion.div
+                        key={current}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1 }}
+                        className="absolute inset-0"
+                    >
+                        {/* Background Image */}
+                        <Image
+                            src={slides[current].bg}
+                            alt="Background"
+                            fill
+                            className="object-cover dark:brightness-[0.4]"
+                            priority
                         />
-                        <Input
-                            type="password"
-                            name="password"
-                            placeholder="Password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
-                        <Button type="submit" disabled={loading} className="w-full">
-                            {loading ? "Loading..." : "Login"}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
+
+                        {/* Overlay Content */}
+                        <div className="relative z-10 flex flex-col items-center justify-end text-center px-8 h-full text-white pb-24">
+                            <motion.div
+                                key={current + "-content"}
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.8 }}
+                                className="flex flex-col items-center gap-4 max-w-xs"
+                            >
+                                <Image
+                                    src={slides[current].logo}
+                                    alt="Logo"
+                                    width={48}
+                                    height={48}
+                                />
+                                <h2 className="text-2xl font-semibold leading-snug max-w-xs">
+                                    {slides[current].title}
+                                </h2>
+                                <p className="text-sm text-gray-200 max-w-sm">
+                                    {slides[current].desc}
+                                </p>
+                            </motion.div>
+
+                            {/* Dot Indicators */}
+                            <div className="flex gap-2 mt-6">
+                                {slides.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrent(i)}
+                                        className={`h-2.5 w-2.5 rounded-full transition-colors duration-300 ${current === i
+                                            ? "bg-primary"
+                                            : "bg-white"
+                                            }`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
+            </div>
         </div>
-    );
+    )
 }

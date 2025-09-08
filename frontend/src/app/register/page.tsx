@@ -1,109 +1,117 @@
-'use client';
+"use client"
 
-import { useState } from "react";
-import { registerUser, verifyEmail } from "@/lib/api/auth";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import OtpModal from "@/components/shared/otpModal";
-import { useRouter } from "next/navigation";
-import axios from "axios";
+import { useEffect, useState } from "react"
+import Image from "next/image"
+import { motion, AnimatePresence } from "framer-motion"
+import { RegisterForm } from "@/components/shared/registerForm"
 
-interface FormData {
-    fullName: string;
-    email: string;
-    phone: string;
-    address: string;
-    education: string;
-    password: string;
-}
+const slides = [
+    {
+        bg: "/images/feature-1.png",
+        logo: "/images/SIMKAS.png",
+        title: "Mulai Hidup Sehat dan Sejahtera Bersama Kami",
+        desc: "Mulai Hidup Sehat dan Sejahtera Bersama Kami",
+    },
+    {
+        bg: "/images/feature-2.png",
+        logo: "/images/SIMKAS.png",
+        title: "Aksi Nyata untuk Bumi Hijau",
+        desc: "Matikan lampu saat tidak digunakan dan kurangi jejak karbon mulai dari rumah.",
+    },
+    {
+        bg: "/images/feature-3.png",
+        logo: "/images/SIMKAS.png",
+        title: "Bersama Kurangi Emisi, Raih Masa Depan Cerah",
+        desc: "Setiap aksi kecilmu adalah investasi bagi generasi mendatang.",
+    },
+]
 
-interface ApiError {
-    error: string;
-}
+export default function LoginPage() {
+    const [current, setCurrent] = useState(0)
 
-export default function RegisterPage() {
-    const [formData, setFormData] = useState<FormData>({
-        fullName: "",
-        email: "",
-        phone: "",
-        address: "",
-        education: "",
-        password: "",
-    });
-
-    const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
-
-    const router = useRouter();
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const res = await registerUser(formData);
-            alert(res.message);
-            setIsOtpModalOpen(true);
-        } catch (err: unknown) {
-            if (axios.isAxiosError<ApiError>(err)) {
-                alert(err.response?.data?.error || "Gagal mendaftar");
-            } else {
-                alert("Gagal mendaftar");
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async (otp: string) => {
-        try {
-            const res = await verifyEmail({
-                email: formData.email,
-                otp,
-            });
-            alert(res.message);
-            setIsOtpModalOpen(false);
-            router.push("/login");
-            return true;
-        } catch (err: unknown) {
-            if (axios.isAxiosError<ApiError>(err)) {
-                alert(err.response?.data?.error || "OTP salah");
-            } else {
-                alert("OTP salah");
-            }
-            return false;
-        }
-    };
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrent((prev) => (prev + 1) % slides.length)
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [])
 
     return (
-        <div className="max-w-md mx-auto p-6">
-            <h1 className="text-2xl font-bold mb-4">Register</h1>
+        <div className="grid min-h-svh lg:grid-cols-12">
+            <div className="relative hidden lg:block lg:col-span-5 overflow-hidden">
+                <AnimatePresence mode="sync">
+                    <motion.div
+                        key={current}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1 }}
+                        className="absolute inset-0"
+                    >
+                        <Image
+                            src={slides[current].bg}
+                            alt="Background"
+                            fill
+                            className="object-cover dark:brightness-[0.4]"
+                            priority
+                        />
 
-            <form onSubmit={handleRegister} className="space-y-4">
-                <Input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} />
-                <Input type="email" name="email" placeholder="Email" onChange={handleChange} />
-                <Input type="text" name="phone" placeholder="Phone" onChange={handleChange} />
-                <Input type="text" name="address" placeholder="Address" onChange={handleChange} />
-                <Input type="text" name="education" placeholder="Education" onChange={handleChange} />
-                <Input type="password" name="password" placeholder="Password" onChange={handleChange} />
-                <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Loading..." : "Register"}
-                </Button>
-            </form>
+                        {/* Overlay Content */}
+                        <div className="relative z-10 flex flex-col items-center justify-end text-center px-8 h-full text-white pb-24">
+                            <motion.div
+                                key={current + "-content"}
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.8 }}
+                                className="flex flex-col items-center gap-4 max-w-xs"
+                            >
+                                <Image
+                                    src={slides[current].logo}
+                                    alt="Logo"
+                                    width={48}
+                                    height={48}
+                                />
+                                <h2 className="text-2xl font-semibold leading-snug max-w-xs">
+                                    {slides[current].title}
+                                </h2>
+                                <p className="text-sm text-gray-200 max-w-sm">
+                                    {slides[current].desc}
+                                </p>
+                            </motion.div>
 
-            {isOtpModalOpen && (
-                <OtpModal
-                    onClose={() => setIsOtpModalOpen(false)}
-                    onSubmit={handleVerifyOtp}
-                    email={formData.email}
-                    redirectOnSuccess="/login"
-                    title="Verifikasi Email"
-                    description="Masukkan kode OTP untuk mengaktifkan akun."
-                />
-            )}
+                            <div className="flex gap-2 mt-6">
+                                {slides.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrent(i)}
+                                        className={`h-2.5 w-2.5 rounded-full transition-colors duration-300 ${current === i
+                                            ? "bg-primary"
+                                            : "bg-white"
+                                            }`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+
+            <div className="flex flex-col gap-4 p-6 md:p-8 lg:col-span-7">
+                <div className="flex justify-center md:justify-start">
+                    <Image
+                        src="/images/SIMKAS.png"
+                        alt="Main Logo"
+                        width={128}
+                        height={128}
+                    />
+                </div>
+                <div className="flex flex-1 items-center justify-center">
+                    <div className="w-full max-w-md">
+                        <RegisterForm />
+                    </div>
+                </div>
+            </div>
         </div>
-    );
+    )
 }
