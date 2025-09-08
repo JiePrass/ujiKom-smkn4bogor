@@ -33,7 +33,7 @@ export default function EventCard({ event, isAdmin, onEventUpdated }: EventCardP
 
     const handleViewDetail = () => {
         const slug = slugify(event.title);
-        router.push(`/events/${slug}-${event.id}`);
+        router.push(`/event/${slug}-${event.id}`);
     };
 
     const handleDelete = async () => {
