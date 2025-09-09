@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 
 export function HeroSection() {
     return (
-        <section className="relative mt-15">
+        <section className="container mx-auto relative mt-15 px-6 md:px-0">
             {/* Background */}
             <div className="absolute inset-0 rounded-2xl overflow-hidden">
                 <Image
@@ -31,7 +31,7 @@ export function HeroSection() {
                             Daftar Sekarang
                         </Link>
                     </Button>
-                    <Button asChild variant="outline">
+                    <Button asChild variant="outline" className="text-white">
                         <Link href="/" aria-label="Jelajahi Event">
                             Jelajahi Event
                         </Link>

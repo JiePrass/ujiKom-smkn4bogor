@@ -64,7 +64,7 @@ export default function FAQSection() {
     }
 
     return (
-        <section aria-label="Pertanyaan yang Sering Diajukan">
+        <section aria-label="Pertanyaan yang Sering Diajukan" className="container mx-auto px-6 md:px-0">
             {/* Structured Data JSON-LD */}
             <Script
                 id="faq-jsonld"

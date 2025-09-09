@@ -26,7 +26,7 @@ export default function EventSection() {
     }, []);
 
     return (
-        <section>
+        <section className="container mx-auto px-6 md:px-0" aria-label="Event Terbaru">
             <div className="flex justify-between items-center">
                 <h2 className="text-5xl font-bold mb-6">Ikuti Berbagai Event Menarik</h2>
                 <Link href="/event" className="text-lg pr-4 underline font-medium">Lihat Semua</Link>

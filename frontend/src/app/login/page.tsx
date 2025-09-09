@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { LoginForm } from "@/components/shared/loginForm"
+import Link from "next/link"
 
 const slides = [
     {
@@ -40,12 +41,14 @@ export default function LoginPage() {
         <div className="grid min-h-svh lg:grid-cols-12">
             <div className="flex flex-col gap-4 p-6 md:p-8 lg:col-span-7">
                 <div className="flex justify-center md:justify-start">
-                    <Image
-                        src="/images/SIMKAS.png"
-                        alt="Main Logo"
-                        width={128}
-                        height={128}
-                    />
+                    <Link href="/">
+                        <Image
+                            src="/images/SIMKAS.png"
+                            alt="Main Logo"
+                            width={128}
+                            height={128}
+                        />
+                    </Link>
                 </div>
                 <div className="flex flex-1 items-center justify-center">
                     <div className="w-full max-w-sm">

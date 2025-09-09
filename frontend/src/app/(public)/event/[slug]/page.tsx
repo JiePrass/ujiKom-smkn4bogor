@@ -78,11 +78,10 @@ export default function EventDetailPage() {
         fetchEvent();
     }, [slug, router, isLoggedIn]);
 
-    // ✅ fungsi verifikasi OTP
     const handleVerifyOtp = async (otp: string) => {
         if (!event) return false;
         try {
-            await attendEvent(event.id, otp); // pastikan attendEvent bisa menerima token
+            await attendEvent(event.id, otp);
             setHasAttended(true);
             toast.success("Kehadiran berhasil dicatat!");
             setIsOtpOpen(false);
@@ -106,7 +105,7 @@ export default function EventDetailPage() {
 
     const handleRegisterClick = () => {
         if (!isLoggedIn) {
-            alert("Silakan login terlebih dahulu untuk mendaftar.");
+            toast.error("Silakan login terlebih dahulu untuk mendaftar.");
             router.push("/login");
         } else {
             setIsModalOpen(true);
@@ -116,7 +115,7 @@ export default function EventDetailPage() {
     const handleSubmit = async () => {
         if (!event) return;
         if (event.price > 0 && !paymentProof) {
-            alert("Bukti pembayaran wajib diunggah untuk event berbayar.");
+            toast.error("Bukti pembayaran wajib diunggah untuk event berbayar.");
             return;
         }
 
@@ -128,91 +127,103 @@ export default function EventDetailPage() {
             toast.success("Berhasil mendaftar ke event!");
         } catch (err) {
             console.error(err);
-            alert("Gagal mendaftar event");
+            toast.error("Gagal mendaftar event");
         } finally {
             setSubmitting(false);
         }
     };
 
     return (
-        <div className="max-w-4xl mx-auto px-6 py-8">
-            {/* Flyer */}
-            <div className="rounded-xl overflow-hidden shadow-lg mb-6">
-                <Image
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${event.flyerUrl}`}
-                    alt={event.title}
-                    width={1200}
-                    height={700}
-                    className="w-full h-auto object-cover"
-                />
-            </div>
+        <div className="max-w-6xl mx-auto px-6 py-10 mt-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Left Section - Flyer & Info */}
+                <div className="md:col-span-1">
+                    <Card className="overflow-hidden shadow-md p-0 mb-6">
+                        <Image
+                            src={`${process.env.NEXT_PUBLIC_API_URL}${event.flyerUrl}`}
+                            alt={event.title}
+                            width={600}
+                            height={800}
+                            className="w-full h-auto object-contain"
+                        />
+                    </Card>
 
-            {/* Info Event */}
-            <Card className="mb-6">
-                <CardHeader>
-                    <CardTitle className="text-3xl">{event.title}</CardTitle>
-                    <CardDescription>
-                        Diselenggarakan oleh <span className="font-medium">{event.createdBy.fullName}</span>
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                        <h2 className="font-semibold mb-1">📅 Tanggal & Waktu</h2>
-                        <p>{eventDate}</p>
-                        <p>Pukul {event.time} WIB</p>
-                    </div>
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                        <h2 className="font-semibold mb-1">📍 Lokasi</h2>
-                        <p>{event.location}</p>
-                    </div>
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                        <h2 className="font-semibold mb-1">💰 Harga</h2>
-                        <p>{event.price > 0 ? `Rp ${event.price.toLocaleString("id-ID")}` : "Gratis"}</p>
-                    </div>
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                        <h2 className="font-semibold mb-1">👥 Peserta Terdaftar</h2>
-                        <p>{event.participantCount} orang</p>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Deskripsi */}
-            <Card className="mb-6">
-                <CardHeader>
-                    <CardTitle>📝 Deskripsi</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p>{event.description}</p>
-                </CardContent>
-            </Card>
-
-            {/* Tombol Daftar / Attend */}
-            {!hasRegistered ? (
-                <Button className="w-full rounded-full" onClick={handleRegisterClick}>
-                    Daftar Sekarang
-                </Button>
-            ) : (
-                <div className="flex flex-col gap-3">
-                    <Button className="w-full rounded-full" disabled>
-                        ✅ Sudah Mendaftar Event Ini
-                    </Button>
-
-                    {!hasAttended && (
-                        <Button
-                            className="w-full rounded-full bg-green-600 hover:bg-green-700"
-                            onClick={() => setIsOtpOpen(true)} // ✅ buka OTP modal
-                        >
-                            Hadir Sekarang
-                        </Button>
-                    )}
-
-                    {hasAttended && (
-                        <Button className="w-full rounded-full bg-gray-400" disabled>
-                            ✅ Kehadiran Tercatat
-                        </Button>
-                    )}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">📌 Info Event</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3 text-sm">
+                            <div>
+                                <p className="font-semibold">📅 Tanggal & Waktu</p>
+                                <p>{eventDate}</p>
+                                <p>Pukul {event.time} WIB</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold">📍 Lokasi</p>
+                                <p>{event.location}</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold">💰 Harga</p>
+                                <p>{event.price > 0 ? `Rp ${event.price.toLocaleString("id-ID")}` : "Gratis"}</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold">👥 Peserta</p>
+                                <p>{event.participantCount} orang</p>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
-            )}
+
+                {/* Right Section - Title, Actions, Description */}
+                <div className="md:col-span-2 flex flex-col space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-3xl">{event.title}</CardTitle>
+                            <CardDescription>
+                                Diselenggarakan oleh <span className="font-medium">{event.createdBy.fullName}</span>
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {/* Buttons */}
+                            {!hasRegistered ? (
+                                <Button className="w-full md:w-auto rounded-full" onClick={handleRegisterClick}>
+                                    Daftar Sekarang
+                                </Button>
+                            ) : (
+                                <div className="flex flex-col md:flex-row gap-3">
+                                    <Button className="w-full md:w-auto rounded-full" disabled>
+                                        ✅ Sudah Mendaftar
+                                    </Button>
+
+                                    {!hasAttended && (
+                                        <Button
+                                            className="w-full md:w-auto rounded-full bg-green-600 hover:bg-green-700"
+                                            onClick={() => setIsOtpOpen(true)}
+                                        >
+                                            Hadir Sekarang
+                                        </Button>
+                                    )}
+
+                                    {hasAttended && (
+                                        <Button className="w-full md:w-auto rounded-full bg-gray-400" disabled>
+                                            ✅ Kehadiran Tercatat
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>📝 Deskripsi</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="leading-relaxed text-gray-700">{event.description}</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
 
             {/* Modal Registrasi */}
             <RegistrationModal
@@ -226,11 +237,7 @@ export default function EventDetailPage() {
 
             {/* Modal OTP untuk presensi */}
             {isOtpOpen && (
-                <OtpModal
-                    onClose={() => setIsOtpOpen(false)}
-                    onSubmit={handleVerifyOtp}
-                    length={undefined}
-                />
+                <OtpModal onClose={() => setIsOtpOpen(false)} onSubmit={handleVerifyOtp} length={undefined} />
             )}
         </div>
     );
