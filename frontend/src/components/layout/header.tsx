@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Menu } from "lucide-react";
 import Image from "next/image";
@@ -12,7 +12,16 @@ import NotificationDropdown from "../shared/notificationDropdown";
 import MobileSidebar from "./mobile/mobileSidebar";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { useAuth } from "@/context/authContext"; // Ambil dari context
+import { useAuth } from "@/context/authContext";
+
+// 🔹 Import API helpers
+import {
+    getNotifications,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    deleteNotification,
+} from "@/lib/api/notification";
+import { Notification } from "@/types/model";
 
 const navLinks = [
     { key: "beranda", label: "Beranda", href: "/" },
@@ -32,14 +41,48 @@ export default function Header() {
     const ref = useRef(null);
     const inView = useInView(ref, { once: true, amount: 0.2 });
 
-    const { user, isLoggedIn } = useAuth(); // ✅ Ambil data dari Context
+    const { user, isLoggedIn } = useAuth();
 
-    const [notifications] = useState([
-        "Event A akan dimulai besok.",
-        "Sertifikat Anda tersedia.",
-        "Pembayaran berhasil dikonfirmasi.",
-        "Event B telah selesai.",
-    ]);
+    // 🔹 State untuk notifikasi
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [loading, setLoading] = useState(false);
+
+    // 🔹 Fetch notifikasi dari API
+    const fetchNotifications = async () => {
+        try {
+            setLoading(true);
+            const res = await getNotifications();
+            setNotifications(res.notifications);
+            setUnreadCount(res.unreadCount);
+        } catch (error) {
+            console.error("Gagal mengambil notifikasi", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            fetchNotifications();
+        }
+    }, [isLoggedIn]);
+
+    // 🔹 Handler aksi notifikasi
+    const handleMarkAsRead = async (id: number) => {
+        await markNotificationAsRead(id);
+        fetchNotifications();
+    };
+
+    const handleMarkAllAsRead = async () => {
+        await markAllNotificationsAsRead();
+        fetchNotifications();
+    };
+
+    const handleDeleteNotification = async (id: number) => {
+        await deleteNotification(id);
+        fetchNotifications();
+    };
 
     const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -117,21 +160,19 @@ export default function Header() {
 
                     {/* Menu kanan */}
                     <div className="ml-auto hidden md:flex items-center gap-4">
-                        <SearchBar
-                            value=""
-                            onChange={() => console.log("NOT IMPLEMENT")}
-                        />
+                        <SearchBar value="" onChange={() => console.log("NOT IMPLEMENT")} />
                         {isLoggedIn && user ? (
                             <>
-                                <ProfileDropdown
-                                    userData={user}
-                                />
+                                <ProfileDropdown userData={user} />
                                 <NotificationDropdown
                                     notifications={notifications}
+                                    unreadCount={unreadCount}
+                                    loading={loading}
                                     visible={showNotif}
-                                    toggle={() => {
-                                        setShowNotif(!showNotif);
-                                    }}
+                                    toggle={() => setShowNotif(!showNotif)}
+                                    onMarkAsRead={handleMarkAsRead}
+                                    onMarkAllAsRead={handleMarkAllAsRead}
+                                    onDelete={handleDeleteNotification}
                                 />
                             </>
                         ) : (

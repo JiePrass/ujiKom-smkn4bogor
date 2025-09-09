@@ -45,7 +45,7 @@ app.use('/registration', registrationRoute)
 
 // NOTIFICATION
 const notificationRoutes = require('./routes/notification.route')
-app.use('/notification', notificationRoutes)
+app.use('/notifications', notificationRoutes)
 
 // DASHBOARD
 const dashboardRoutes = require('./routes/dashboard.route')

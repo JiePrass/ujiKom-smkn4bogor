@@ -97,6 +97,48 @@ async function main() {
         }
     }
 
+    // ===== Notifications Seeder =====
+    const notificationsData = []
+
+    for (const user of participants) {
+        const randomEvents = allEvents.filter(() => Math.random() > 0.7) // lebih jarang notif
+
+        for (const event of randomEvents) {
+            notificationsData.push({
+                userId: user.id,
+                title: "Pengingat Event",
+                message: `Pengingat: Anda terdaftar di ${event.title} pada ${event.date.toLocaleDateString()}`,
+                type: "EVENT_REMINDER",
+                isRead: Math.random() > 0.5,
+                createdAt: new Date(event.date.getTime() - 3 * 24 * 60 * 60 * 1000),
+            })
+        }
+    }
+
+    notificationsData.push(
+        {
+            userId: admin.id,
+            title: "Laporan Pendaftaran",
+            message: "Ada 5 peserta baru mendaftar minggu ini",
+            type: "SYSTEM",
+            isRead: false,
+            createdAt: new Date(),
+        },
+        {
+            userId: admin.id,
+            title: "Event Penuh",
+            message: "Beberapa event sudah penuh kapasitas",
+            type: "SYSTEM",
+            isRead: true,
+            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
+        }
+    )
+
+
+    if (notificationsData.length > 0) {
+        await prisma.notification.createMany({ data: notificationsData })
+    }
+
     console.log("✅ Seeder berhasil ditambahkan")
 }
 

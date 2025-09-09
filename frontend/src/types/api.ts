@@ -68,6 +68,7 @@ export interface DownloadCertificateResponse {
 
 // Notification API
 export interface GetNotificationsResponse {
+    unreadCount: number;
     notifications: Notification[];
 }
 export interface MarkNotificationReadResponse {
