@@ -71,9 +71,8 @@ export default function AdminDashboardPage() {
         fetchData();
     }, []);
 
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];                    
 
-    // hitung trending % (last vs prev)
     const calcTrend = (data: any[], key: string) => {
         if (!data || data.length < 2) return { percent: 0, up: true };
         const last = data[data.length - 1][key];
@@ -153,7 +152,7 @@ export default function AdminDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <ChartContainer config={chartConfig}>
-                            <BarChart data={eventsPerMonth}>
+                            <BarChart data={eventsPerMonth.slice(-8)}>
                                 <CartesianGrid vertical={false} />
                                 <XAxis
                                     dataKey="month"
@@ -203,7 +202,7 @@ export default function AdminDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <ChartContainer config={chartConfig}>
-                            <BarChart data={attendeesPerMonth} layout="vertical">
+                            <BarChart data={attendeesPerMonth.slice(-6)} layout="vertical">
                                 <CartesianGrid vertical={false} />
                                 <XAxis
                                     type="number"

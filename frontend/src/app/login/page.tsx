@@ -9,20 +9,20 @@ const slides = [
     {
         bg: "/images/feature-1.png",
         logo: "/images/SIMKAS.png",
-        title: "Mulai Hidup Sehat dan Sejahtera Bersama Kami",
-        desc: "Mulai Hidup Sehat dan Sejahtera Bersama Kami",
+        title: "Lorem Ipsum Dolor",
+        desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
     },
     {
         bg: "/images/feature-2.png",
         logo: "/images/SIMKAS.png",
-        title: "Aksi Nyata untuk Bumi Hijau",
-        desc: "Matikan lampu saat tidak digunakan dan kurangi jejak karbon mulai dari rumah.",
+        title: "Lorem Ipsum Dolor",
+        desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
     },
     {
         bg: "/images/feature-3.png",
         logo: "/images/SIMKAS.png",
-        title: "Bersama Kurangi Emisi, Raih Masa Depan Cerah",
-        desc: "Setiap aksi kecilmu adalah investasi bagi generasi mendatang.",
+        title: "Lorem Ipsum Dolor",
+        desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
     },
 ]
 

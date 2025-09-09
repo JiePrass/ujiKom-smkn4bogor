@@ -9,8 +9,8 @@ const slides = [
     {
         bg: "/images/feature-1.png",
         logo: "/images/SIMKAS.png",
-        title: "Mulai Hidup Sehat dan Sejahtera Bersama Kami",
-        desc: "Mulai Hidup Sehat dan Sejahtera Bersama Kami",
+        title: "Lorem Ipsum Dolor",
+        desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
     },
     {
         bg: "/images/feature-2.png",
@@ -21,8 +21,8 @@ const slides = [
     {
         bg: "/images/feature-3.png",
         logo: "/images/SIMKAS.png",
-        title: "Bersama Kurangi Emisi, Raih Masa Depan Cerah",
-        desc: "Setiap aksi kecilmu adalah investasi bagi generasi mendatang.",
+        title: "Lorem Ipsum Dolor",
+        desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
     },
 ]
 
@@ -58,6 +58,7 @@ export default function LoginPage() {
 
                         {/* Overlay Content */}
                         <div className="relative z-10 flex flex-col items-center justify-end text-center px-8 h-full text-white pb-24">
+                            <div className="absolute inset-0 bg-black/40" />
                             <motion.div
                                 key={current + "-content"}
                                 initial={{ y: 20, opacity: 0 }}
@@ -72,15 +73,17 @@ export default function LoginPage() {
                                     width={48}
                                     height={48}
                                 />
-                                <h2 className="text-2xl font-semibold leading-snug max-w-xs">
-                                    {slides[current].title}
-                                </h2>
-                                <p className="text-sm text-gray-200 max-w-sm">
-                                    {slides[current].desc}
-                                </p>
+                                <div className="z-10">
+                                    <h2 className="text-2xl font-semibold leading-snug max-w-xs">
+                                        {slides[current].title}
+                                    </h2>
+                                    <p className="text-sm text-gray-200 max-w-sm">
+                                        {slides[current].desc}
+                                    </p>
+                                </div>
                             </motion.div>
 
-                            <div className="flex gap-2 mt-6">
+                            <div className="flex gap-2 mt-6 z-10">
                                 {slides.map((_, i) => (
                                     <button
                                         key={i}
