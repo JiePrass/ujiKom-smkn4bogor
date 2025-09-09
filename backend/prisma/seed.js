@@ -1,151 +1,110 @@
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
+const { PrismaClient } = require("@prisma/client")
+const bcrypt = require("bcryptjs")
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 async function main() {
-    const passwordHash = await bcrypt.hash('password123', 10);
+    const passwordHash = await bcrypt.hash("password123", 10)
 
-  // Admin
+    // ===== Admin Seeder =====
     const admin = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
-    update: {},
-    create: {
-        fullName: 'Admin User',
-        email: 'admin@example.com',
-        phone: '081234567890',
-        address: 'Jakarta',
-        education: 'S1 Informatika',
-        passwordHash,
-        role: 'ADMIN',
-        isVerified: true,
-    },
-});
-
-  // Peserta
-    const participants = await Promise.all(
-    Array.from({ length: 3 }).map((_, i) =>
-        prisma.user.upsert({
-        where: { email: `user${i + 1}@example.com` },
+        where: { email: "admin@example.com" },
         update: {},
         create: {
-            fullName: `User ${i + 1}`,
-            email: `user${i + 1}@example.com`,
-            phone: `08123456789${i + 1}`,
-            address: 'Bandung',
-            education: 'SMA',
+            fullName: "Admin User",
+            email: "admin@example.com",
+            phone: "081234567890",
+            address: "Jakarta",
+            education: "S1 Informatika",
             passwordHash,
+            role: "ADMIN",
             isVerified: true,
-            },
-        })
+        },
+    })
+
+    // ===== Peserta Seeder =====
+    const participants = await Promise.all(
+        Array.from({ length: 20 }).map((_, i) =>
+            prisma.user.upsert({
+                where: { email: `user${i + 1}@example.com` },
+                update: {},
+                create: {
+                    fullName: `User ${i + 1}`,
+                    email: `user${i + 1}@example.com`,
+                    phone: `08123456789${i + 1}`,
+                    address: i % 2 === 0 ? "Bandung" : "Surabaya",
+                    education: i % 3 === 0 ? "SMA" : "S1",
+                    passwordHash,
+                    isVerified: true,
+                },
+            })
+        )
     )
-);
 
-const now = new Date();
-const pastDate = new Date(now);
-pastDate.setDate(now.getDate() - 5);
-const futureDate = new Date(now);
-futureDate.setDate(now.getDate() + 5);
+    // ===== Generate Events by Month =====
+    const now = new Date()
+    const year = now.getFullYear()
 
-  // Events
-await prisma.event.createMany({
-        data: [
-        {
-            title: 'Event Selesai 1',
-            description: 'Event yang sudah lewat',
-            date: pastDate,
-            time: '10:00',
-            location: 'Jakarta',
-            flyerUrl: '/uploads/flyers/event1.jpg',
-            createdBy: admin.id,
-            price: 0,
-        },
-        {
-            title: 'Event Selesai 2',
-            description: 'Event yang sudah lewat',
-            date: pastDate,
-            time: '13:00',
-            location: 'Bandung',
-            flyerUrl: '/uploads/flyers/event2.jpg',
-            createdBy: admin.id,
-            price: 0,
-        },
-        {
-            title: 'Event Hari Ini 1',
-            description: 'Event sedang berlangsung',
-            date: now,
-            time: '09:00',
-            location: 'Surabaya',
-            flyerUrl: '/uploads/flyers/event3.jpg',
-            createdBy: admin.id,
-            price: 50000,
-        },
-        {
-            title: 'Event Hari Ini 2',
-            description: 'Event sedang berlangsung',
-            date: now,
-            time: '15:00',
-            location: 'Yogyakarta',
-            flyerUrl: '/uploads/flyers/event4.jpg',
-            createdBy: admin.id,
-            price: 0,
-        },
-        {
-            title: 'Event Mendatang 1',
-            description: 'Event masa depan',
-            date: futureDate,
-            time: '10:00',
-            location: 'Bali',
-            flyerUrl: '/uploads/flyers/event5.jpg',
-            createdBy: admin.id,
-            price: 100000,
-        },
-        {
-            title: 'Event Mendatang 2',
-            description: 'Event masa depan',
-            date: futureDate,
-            time: '14:00',
-            location: 'Semarang',
-            flyerUrl: '/uploads/flyers/event6.jpg',
-            createdBy: admin.id,
-            price: 0,
-        },
-        ],
-    });
+    const eventsData = []
+    const locations = ["Jakarta", "Bandung", "Surabaya", "Yogyakarta", "Bali", "Semarang"]
+    const prices = [0, 25000, 50000, 75000, 100000, 150000]
 
-    const allEvents = await prisma.event.findMany();
+    for (let month = 0; month < 12; month++) {
+        for (let j = 0; j < 2; j++) {
+            const eventDate = new Date(year, month, Math.floor(Math.random() * 25) + 1)
 
-    for (const user of participants) {
-        for (const event of allEvents.filter(e => e.title.includes('Selesai'))) {
-        const registration = await prisma.registration.create({
-            data: {
-            userId: user.id,
-            eventId: event.id,
-            status: 'APPROVED',
-            },
-        });
-
-        await prisma.attendance.create({
-            data: { registrationId: registration.id },
-        });
-
-        await prisma.certificate.create({
-            data: {
-            registrationId: registration.id,
-            url: `/uploads/certificates/${registration.id}.pdf`,
-            },
-        });
+            eventsData.push({
+                title: `Event Bulan ${month + 1} - ${j + 1}`,
+                description: `Kegiatan menarik bulan ${month + 1}`,
+                date: eventDate,
+                time: j === 0 ? "09:00" : "14:00",
+                location: locations[(month + j) % locations.length],
+                flyerUrl: `/uploads/flyers/event-${month + 1}-${j + 1}.jpg`,
+                createdBy: admin.id,
+                price: prices[(month + j) % prices.length],
+            })
         }
     }
 
-    console.log('✅ Seeder selesai');
+    await prisma.event.createMany({ data: eventsData })
+    const allEvents = await prisma.event.findMany()
+
+    // ===== Registrations, Attendance & Certificates =====
+    for (const user of participants) {
+        const randomEvents = allEvents.filter(() => Math.random() > 0.5) // 50% chance ikut event
+
+        for (const event of randomEvents) {
+            const registration = await prisma.registration.create({
+                data: {
+                    userId: user.id,
+                    eventId: event.id,
+                    status: Math.random() > 0.2 ? "APPROVED" : "PENDING", // sebagian pending
+                },
+            })
+
+            if (event.date < now && registration.status === "APPROVED") {
+                await prisma.attendance.create({
+                    data: { registrationId: registration.id },
+                })
+
+                await prisma.certificate.create({
+                    data: {
+                        registrationId: registration.id,
+                        url: `/uploads/certificates/${registration.id}.pdf`,
+                    },
+                })
+            }
+        }
+    }
+
+    console.log("✅ Seeder berhasil ditambahkan")
 }
 
 main()
-    .catch(e => {
-        console.error(e);
-        process.exit(1);
+    .catch((e) => {
+        console.error(e)
+        process.exit(1)
     })
     .finally(async () => {
-        await prisma.$disconnect();
-    });
+        await prisma.$disconnect()
+    })

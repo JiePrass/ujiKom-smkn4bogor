@@ -9,23 +9,36 @@ import {
     getDataTopEvents,
 } from "@/lib/api/dashboard";
 
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+} from "recharts";
+
 import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
     ChartConfig,
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
-} from "@/components/ui/chart"
-import { TrendingUp } from "lucide-react";
-import { Tooltip } from "@/components/ui/tooltip";  
+} from "@/components/ui/chart";
+import {
+    Calendar,
+    CheckCircle,
+    TrendingDown,
+    TrendingUp,
+    Users,
+} from "lucide-react";
+import SummaryCard from "@/components/shared/sumCard";
+import EventCard from "@/components/shared/eventCard";
 
 export default function AdminDashboardPage() {
     const [summary, setSummary] = useState<any>(null);
@@ -58,152 +71,190 @@ export default function AdminDashboardPage() {
         fetchData();
     }, []);
 
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
+    // hitung trending % (last vs prev)
+    const calcTrend = (data: any[], key: string) => {
+        if (!data || data.length < 2) return { percent: 0, up: true };
+        const last = data[data.length - 1][key];
+        const prev = data[data.length - 2][key];
+        if (!prev) return { percent: 0, up: true };
+        const diff = ((last - prev) / prev) * 100;
+        return { percent: Math.round(diff), up: diff >= 0 };
+    };
+
+    const eventTrend = calcTrend(eventsPerMonth, "events");
+    const attendeeTrend = calcTrend(attendeesPerMonth, "attendees");
+
+    const sumItems = [
+        {
+            title: "Total Event",
+            value: summary?.totalEvents || 0,
+            icon: Calendar,
+            trend: eventTrend,
+        },
+        {
+            title: "Total Registrasi",
+            value: summary?.totalRegistrations || 0,
+            icon: Users,
+            trend: { percent: 0, up: true }, // sementara statis
+        },
+        {
+            title: "Total Kehardiran",
+            value: summary?.totalAttendees || 0,
+            icon: CheckCircle,
+            trend: attendeeTrend,
+        },
+    ];
+
     const chartConfig = {
         month: {
             label: "Month",
             color: "var(--chart-1)",
         },
-    } satisfies ChartConfig
-
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-    console.log("Events per Month:", eventsPerMonth);
+    } satisfies ChartConfig;
 
     if (loading) {
         return <p className="text-muted-foreground">Memuat data dashboard...</p>;
     }
 
     return (
-        <div className="space-y-6">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Total Event</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold">{summary?.totalEvents || 0}</p>
-                    </CardContent>
-                </Card>
+        <div className="grid grid-cols-12 gap-6">
+            {/* Kolom kiri */}
+            <div className="col-span-8 space-y-6">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {sumItems.map((item, idx) => (
+                        <SummaryCard
+                            key={idx}
+                            title={item.title}
+                            value={item.value}
+                            icon={item.icon}
+                            trend={item.trend}
+                        />
+                    ))}
+                </div>
 
+                {/* Chart: Events per Month */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Total Registrasi</CardTitle>
+                    <CardHeader className="flex flex-row justify-between items-center">
+                        <div>
+                            <CardTitle>Jumlah Event per Bulan</CardTitle>
+                            <CardDescription>Tahun {new Date().getFullYear()}</CardDescription>
+                        </div>
+                        <div className="flex items-center text-sm">
+                            {eventTrend.up ? (
+                                <TrendingUp className="text-green-500 mr-1 h-4 w-4" />
+                            ) : (
+                                <TrendingDown className="text-red-500 mr-1 h-4 w-4" />
+                            )}
+                            {eventTrend.percent}%
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-2xl font-bold">{summary?.totalRegistrations || 0}</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Total Hadir</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold">{summary?.totalAttendees || 0}</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Event Terdekat</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {summary?.nearestEvent ? (
-                            <div>
-                                <p className="font-semibold">{summary.nearestEvent.title}</p>
-                                <p className="text-sm text-muted-foreground">
-                                    {new Date(summary.nearestEvent.date).toLocaleDateString("id-ID")}
-                                </p>
-                            </div>
-                        ) : (
-                            <p className="text-muted-foreground text-sm">Tidak ada event mendatang</p>
-                        )}
+                        <ChartContainer config={chartConfig}>
+                            <BarChart data={eventsPerMonth}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="month"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(value) => monthNames[value - 1]}
+                                />
+                                <YAxis
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(v) => String(Math.round(v))}
+                                    width={10}
+                                />
+                                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                <Bar dataKey="events" fill="#2563eb" radius={8} />
+                            </BarChart>
+                        </ChartContainer>
                     </CardContent>
                 </Card>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Bar Chart</CardTitle>
-                    <CardDescription>January - June 2024</CardDescription>
+            {/* Kolom kanan */}
+            <div className="col-span-4 space-y-6">
+                {/* Nearest Event */}
+                {summary?.nearestEvent && (
+                    <div>
+                        <EventCard
+                            event={summary.nearestEvent}
+                            isAdmin={true}
+                            onEventUpdated={fetchData}
+                        />
+                    </div>
+                )}
+
+                {/* Chart: Attendees per Month */}
+                <Card>
+                    <CardHeader className="flex flex-row justify-between items-center">
+                        <CardTitle>Jumlah Peserta Hadir per Bulan</CardTitle>
+                        <div className="flex items-center text-sm">
+                            {attendeeTrend.up ? (
+                                <TrendingUp className="text-green-500 mr-1 h-4 w-4" />
+                            ) : (
+                                <TrendingDown className="text-red-500 mr-1 h-4 w-4" />
+                            )}
+                            {attendeeTrend.percent}%
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig}>
+                            <BarChart data={attendeesPerMonth} layout="vertical">
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    type="number"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(v) => String(Math.round(v))}
+                                />
+                                <YAxis
+                                    type="category"
+                                    dataKey="month"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(value) => monthNames[value - 1]}
+                                    width={24}
+                                />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <Bar dataKey="attendees" fill="#16a34a" radius={6} />
+                            </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Chart: Top Events */}
+            <Card className="col-span-12">
+                <CardHeader className="flex flex-row justify-between items-center">
+                    <CardTitle>10 Event dengan Peserta Terbanyak</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig}>
-                        <BarChart accessibilityLayer data={eventsPerMonth}>
+                        <BarChart data={topEvents}>
                             <CartesianGrid vertical={false} />
                             <XAxis
-                                dataKey="month"
+                                type="category"
+                                dataKey="title"
+                                tick={{ fontSize: 12 }}
+                                interval={0}
                                 tickLine={false}
-                                tickMargin={10}
                                 axisLine={false}
-                                tickFormatter={(value) => monthNames[value - 1]}
                             />
-                            <ChartTooltip
-                                cursor={false}
-                                content={<ChartTooltipContent hideLabel />}
+                            <YAxis
+                                type="number"
+                                tickLine={false}
+                                axisLine={false}
+                                tickFormatter={(v) => String(Math.round(v))}
+                                width={10}
                             />
-                            <Bar dataKey="events" fill="var(--color-desktop)" radius={8} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Bar dataKey="participants" fill="#dc2626" radius={6} />
                         </BarChart>
                     </ChartContainer>
-                </CardContent>
-                <CardFooter className="flex-col items-start gap-2 text-sm">
-                    <div className="flex gap-2 leading-none font-medium">
-                        Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-                    </div>
-                    <div className="text-muted-foreground leading-none">
-                        Showing total visitors for the last 6 months
-                    </div>
-                </CardFooter>
-            </Card>
-
-            {/* Chart: Events per Month */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Jumlah Event per Bulan</CardTitle>
-                </CardHeader>
-                <CardContent className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={eventsPerMonth}>
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="events" fill="#4f46e5" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-
-            {/* Chart: Attendees per Month */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Jumlah Peserta Hadir per Bulan</CardTitle>
-                </CardHeader>
-                <CardContent className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={attendeesPerMonth}>
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="attendees" fill="#16a34a" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-
-            {/* Chart: Top Events */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>10 Event dengan Peserta Terbanyak</CardTitle>
-                </CardHeader>
-                <CardContent className="h-96">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={topEvents} layout="vertical">
-                            <XAxis type="number" />
-                            <YAxis dataKey="title" type="category" width={150} />
-                            <Tooltip />
-                            <Bar dataKey="participants" fill="#dc2626" />
-                        </BarChart>
-                    </ResponsiveContainer>
                 </CardContent>
             </Card>
         </div>

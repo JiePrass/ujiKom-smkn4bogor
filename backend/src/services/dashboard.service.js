@@ -11,7 +11,6 @@ exports.getSummary = async () => {
     const nearestEvent = await prisma.Event.findFirst({
         where: { date: { gte: new Date() } },
         orderBy: { date: 'asc' },
-        select: { id: true, title: true, date: true }
     })
 
     return {
