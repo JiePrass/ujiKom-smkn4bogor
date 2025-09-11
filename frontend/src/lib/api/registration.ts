@@ -28,3 +28,10 @@ export async function checkUserRegistration(eventId: number) {
     const res = await axiosInstance.get(`/registration/${eventId}/check`);
     return res.data;
 }
+
+export async function exportRegistrationCSV(eventId: number) {
+    const res = await axiosInstance.get(`/registration/${eventId}/export`, {
+        responseType: "blob",
+    });
+    return res.data; 
+}

@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
+const { Parser } = require("json2csv");
 const prisma = new PrismaClient()
 
 // Fungsi pembuat token pendek dan mudah diketik
@@ -57,16 +58,37 @@ exports.getRegistrationsByEvent = async (eventId) => {
     return await prisma.registration.findMany({
         where: { eventId: parseInt(eventId) },
         include: {
-            user: {
-                select: {
-                    id: true,
-                    fullName: true,
-                    email: true
-                }
-            }
+            user: true
         }
     })
 }
+
+exports.exportRegistrationsCSV = async (eventId) => {
+    const registrations = await exports.getRegistrationsByEvent(eventId);
+
+    if (!registrations || registrations.length === 0) {
+        throw new Error("Tidak ada data registrasi");
+    }
+
+    const fields = [
+        { label: "Full Name", value: "user.fullName" },
+        { label: "Email", value: "user.email" },
+        { label: "Phone", value: "user.phone" },
+        { label: "Status Pembayaran", value: "status" },
+        { label: "Kehadiran", value: (row) => (row.isAttended ? "Hadir" : "Tidak Hadir") },
+        { label: "Token", value: "token" },
+    ];
+
+    // Gunakan delimiter `;` agar Excel Indonesia baca kolom dengan benar
+    const parser = new Parser({ fields, delimiter: ";" });
+    let csv = parser.parse(registrations);
+
+    // Pastikan line ending Windows
+    csv = csv.replace(/\n/g, "\r\n");
+
+    // Tambahkan BOM supaya Excel tahu UTF-8
+    return "\uFEFF" + csv;
+};
 
 
 exports.updatePaymentStatus = async (registrationId, status) => {
@@ -101,6 +123,6 @@ exports.checkUserRegistration = async (eventId, userId) => {
     const registration = await prisma.registration.findFirst({
         where: { eventId: parseInt(eventId), userId }
     })
-    return !!registration // true jika sudah daftar
+    return !!registration
 }
 

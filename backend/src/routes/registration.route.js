@@ -31,6 +31,14 @@ router.patch(
 
 // Check if user is registered for an event
 router.get(
-    '/:eventId/check', requireLogin, registrationController.checkUserRegistration)
+    '/:eventId/check', 
+    requireLogin, 
+    registrationController.checkUserRegistration)
+
+// Export registrations to CSV (admin only)
+router.get("/:eventId/export",
+    requireLogin,
+    requireRole("ADMIN"),
+    registrationController.exportRegistrationsCSV);
 
 module.exports = router

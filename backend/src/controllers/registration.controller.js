@@ -45,5 +45,15 @@ exports.checkUserRegistration = async (req, res) => {
     }
 }
 
+exports.exportRegistrationsCSV = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const csv = await registrationService.exportRegistrationsCSV(eventId);
 
-
+        res.header("Content-Type", "text/csv");
+        res.attachment(`registrations-event-${eventId}.csv`);
+        res.send(csv);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
