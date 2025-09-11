@@ -6,7 +6,6 @@ import { exportRegistrationCSV, getRegistrationsByEvent, updatePaymentStatus } f
 import { getAllEvents } from "@/lib/api/event";
 import { ArrowUpDown, Download, Funnel } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -26,6 +25,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
+import { ParticipantEventSelector } from "@/components/shared/participantEventSelector";
 
 interface Event {
     id: number;
@@ -189,21 +189,11 @@ export default function AdminParticipantPage() {
                     </div>
 
                     {/* Select Event */}
-                    <Select
-                        value={selectedEvent ? selectedEvent.toString() : undefined}
-                        onValueChange={(val) => setSelectedEvent(Number(val))}
-                    >
-                        <SelectTrigger className="w-[300px]">
-                            <SelectValue placeholder="Pilih Event" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {events.map((event) => (
-                                <SelectItem key={event.id} value={event.id.toString()}>
-                                    {event.title}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <ParticipantEventSelector
+                        events={events}
+                        selectedEvent={selectedEvent}
+                        setSelectedEvent={setSelectedEvent}
+                    />
                 </div>
             </div>
 
