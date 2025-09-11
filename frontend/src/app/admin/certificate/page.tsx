@@ -16,7 +16,7 @@ import { Loader2 } from "lucide-react";
 
 import CertificatesTable from "@/components/shared/table/certificateTable";
 import UnmatchedTable from "@/components/shared/table/unmatchedTable";
-import EventSelector from "@/components/shared/eventSelector";
+import { EventSelector } from "@/components/shared/eventSelector";
 
 // 🔹 Types
 interface Event {
@@ -144,7 +144,7 @@ export default function AdminCertificatesPage() {
                     <EventSelector
                         events={events}
                         selectedEvent={selectedEvent}
-                        onChange={setSelectedEvent}
+                        setSelectedEvent={setSelectedEvent}
                     />
 
                     {/* 🔹 Messages */}

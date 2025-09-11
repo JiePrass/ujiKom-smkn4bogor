@@ -25,7 +25,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { ParticipantEventSelector } from "@/components/shared/participantEventSelector";
+import { EventSelector } from "@/components/shared/eventSelector";
 
 interface Event {
     id: number;
@@ -189,7 +189,7 @@ export default function AdminParticipantPage() {
                     </div>
 
                     {/* Select Event */}
-                    <ParticipantEventSelector
+                    <EventSelector
                         events={events}
                         selectedEvent={selectedEvent}
                         setSelectedEvent={setSelectedEvent}
