@@ -9,6 +9,7 @@ import {
 import { NavMain } from "@/components/shared/adminSidebar/navMain";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import Image from "next/image";
+import { NavFooter } from "../shared/adminSidebar/navFooter";
 
 export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
@@ -63,14 +64,12 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                 </div>
             </SidebarHeader>
 
-            {/* Main Navigation */}
             <SidebarContent>
                 <NavMain items={navMain} />
             </SidebarContent>
 
-            {/* User Info */}
             <SidebarFooter>
-
+                <NavFooter />
             </SidebarFooter>
 
             <SidebarRail />
