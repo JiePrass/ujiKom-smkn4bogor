@@ -3,6 +3,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@layer utilities {
+  .font-sfpro {
+    font-family: var(--font-sfpro);
+  }
+}
+
+html, body {
+  font-family: var(--font-sfpro), sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
