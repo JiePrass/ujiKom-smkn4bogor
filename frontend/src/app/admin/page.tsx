@@ -37,8 +37,8 @@ import {
     TrendingUp,
     Users,
 } from "lucide-react";
-import SummaryCard from "@/components/shared/sumCard";
-import EventCard from "@/components/shared/eventCard";
+import SummaryCard from "@/components/shared/cards/sumCard";
+import EventCard from "@/components/shared/cards/eventCard";
 
 export default function AdminDashboardPage() {
     const [summary, setSummary] = useState<any>(null);

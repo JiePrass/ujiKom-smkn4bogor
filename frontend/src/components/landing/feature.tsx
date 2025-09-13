@@ -6,7 +6,7 @@ export function FeatureSection() {
         <section className="container mx-auto px-6 md:px-0">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* 1. Text Card - Dark */}
-                <div className="bg-foreground text-white rounded-xl p-6 flex flex-col aspect-square justify-between">
+                <div className="bg-primary text-white rounded-xl p-6 flex flex-col aspect-square justify-between">
                     <h3 className="text-lg font-semibold">Cari Berbagai Event Menarik</h3>
                     <div className="flex flex-col gap-2">
                         <p className="text-sm text-white/90">
@@ -26,7 +26,7 @@ export function FeatureSection() {
                         alt="Orang bekerja dengan laptop"
                         width={500}
                         height={500}
-                        className="object-cover"
+                        className="object-cover saturate-0"
                     />
                 </div>
 
@@ -51,7 +51,7 @@ export function FeatureSection() {
                         alt="Suasana kelas"
                         width={500}
                         height={500}
-                        className="object-cover"
+                        className="object-cover saturate-0"
                     />
                 </div>
 
@@ -62,7 +62,7 @@ export function FeatureSection() {
                         alt="Pria sedang bekerja"
                         width={500}
                         height={500}
-                        className="object-cover"
+                        className="object-cover saturate-0"
                     />
                 </div>
 
@@ -87,7 +87,7 @@ export function FeatureSection() {
                         alt="Tangan menandatangani dokumen"
                         width={500}
                         height={500}
-                        className="object-cover"
+                        className="object-cover saturate-0"
                     />
                 </div>
 

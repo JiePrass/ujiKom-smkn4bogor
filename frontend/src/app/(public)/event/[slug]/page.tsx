@@ -9,8 +9,8 @@ import { useAuth } from "@/context/authContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import RegistrationModal from "@/components/shared/registrationModal";
-import OtpModal from "@/components/shared/otpModal";
+import RegistrationModal from "@/components/shared/modals/registrationModal";
+import OtpModal from "@/components/shared/modals/otpModal";
 
 interface EventType {
     id: number;

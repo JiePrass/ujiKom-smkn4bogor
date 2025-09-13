@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { RegisterForm } from "@/components/shared/registerForm"
+import { RegisterForm } from "@/components/shared/forms/registerForm"
 import Link from "next/link"
 
 const slides = [

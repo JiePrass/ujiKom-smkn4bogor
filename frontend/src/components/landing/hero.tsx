@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -12,7 +14,7 @@ export function HeroSection() {
                     alt="Hero Background"
                     fill
                     priority
-                    className="object-cover"
+                    className="object-cover saturate-0"
                 />
                 <div className="absolute inset-0 bg-black/40" />
             </div>
@@ -20,10 +22,11 @@ export function HeroSection() {
             {/* Hero Content */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-28 pb-12">
                 <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg max-w-3xl">
-                    Lorem ipsum dolor sit amet consectetur. Euismod.
+                    Temukan Daftar dan Ikuti Event Favoritmu
                 </h1>
                 <p className="mt-4 text-sm md:text-base text-white/90 max-w-md">
-                    Lorem ipsum dolor sit amet consectetur. Mattis sapien eget mi mi adipiscing scelerisque vitae
+                    Dari event menyenangkan hingga acara edukasi, semua bisa kamu ikuti dengan mudah.
+                    Daftar cepat, hadir, dan dapatkan pengalaman berharga.
                 </p>
                 <div className="mt-6 flex gap-3">
                     <Button asChild>
@@ -45,15 +48,15 @@ export function HeroSection() {
                     {/* Left Cards */}
                     <div className="flex flex-col gap-4">
                         <div className="bg-gray-50 rounded-lg h-full flex flex-col justify-between shadow p-4">
-                            <h3 className="font-semibold text-xl">Lorem Ipsum</h3>
+                            <h3 className="font-semibold text-xl">Event Menyenangkan</h3>
                             <p className="text-sm text-gray-600">
-                                Lorem ipsum dolor sit amet consectetur. In purus maecenas sollicitudin ac. At ultrices quis ut
+                                Nikmati keseruan acara seperti pensi, lomba, dan konser kecil bersama teman-teman.
                             </p>
                         </div>
                         <div className="bg-gray-50 rounded-lg h-full flex flex-col justify-between shadow p-4">
-                            <h3 className="font-semibold text-xl">Lorem Ipsum</h3>
+                            <h3 className="font-semibold text-xl">Event Edukasi</h3>
                             <p className="text-sm text-gray-600">
-                                Lorem ipsum dolor sit amet consectetur. In purus maecenas sollicitudin ac. At ultrices quis ut
+                                Ikuti seminar, workshop, hingga job fair untuk menambah ilmu dan memperluas relasi.
                             </p>
                         </div>
                     </div>
@@ -62,9 +65,9 @@ export function HeroSection() {
                     <div className="relative w-full h-72 md:h-108 rounded-lg overflow-hidden">
                         <Image
                             src="/images/hero-middle.png"
-                            alt="Kegiatan lomba"
+                            alt="Suasana Event Seru"
                             fill
-                            className="object-cover"
+                            className="object-cover saturate-0"
                         />
                     </div>
 
@@ -72,9 +75,9 @@ export function HeroSection() {
                     <div className="relative w-full h-72 md:h-108 rounded-lg overflow-hidden">
                         <Image
                             src="/images/hero-middle.png"
-                            alt="Suasana belajar"
+                            alt="Suasana Event Edukasi"
                             fill
-                            className="object-cover"
+                            className="object-cover saturate-0"
                         />
                     </div>
                 </div>

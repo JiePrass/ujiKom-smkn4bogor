@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { getAllEvents } from "@/lib/api/event";
 import { Event } from "@/types/model";
-import EventCard from "@/components/shared/eventCard";
+import EventCard from "@/components/shared/cards/eventCard";
 
 export default function EventManagement() {
     const [events, setEvents] = useState<Event[]>([]);

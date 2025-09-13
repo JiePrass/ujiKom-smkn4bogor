@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { getAllEvents } from "@/lib/api/event";
 import { Event } from "@/types/model";
-import EventCard from "../shared/eventCard";
-import EventCardSkeleton from "../shared/eventCardSkeleton";
 import Link from "next/link";
+import EventCard from "../shared/cards/eventCard";
+import EventCardSkeleton from "../shared/cards/eventCardSkeleton";
 
 export default function EventSection() {
     const [events, setEvents] = useState<Event[]>([]);

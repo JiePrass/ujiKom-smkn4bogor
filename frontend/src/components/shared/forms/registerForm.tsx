@@ -12,7 +12,7 @@ import Swal from "sweetalert2"
 import { useRouter } from "next/navigation"
 import axios from "axios"
 import { registerUser, verifyEmail } from "@/lib/api/auth"
-import OtpModal from "@/components/shared/otpModal"
+import OtpModal from "@/components/shared/modals/otpModal"
 import {
     Select,
     SelectContent,

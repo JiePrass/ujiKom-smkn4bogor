@@ -1,6 +1,6 @@
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog";
+import { Button } from "../../ui/button";
+import { Input } from "../../ui/input";
 
 interface EventType {
     id: number;
