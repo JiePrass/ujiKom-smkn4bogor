@@ -5,6 +5,7 @@ const { generateOtp } = require('../utils/otp')
 const { generateToken } = require('../utils/token')
 const crypto = require('crypto');
 const mailer = require('../utils/mailer')
+const axios = require("axios");
 
 exports.register = async (data) => {
     const {
@@ -194,4 +195,77 @@ exports.getUserById = async (userId) => {
             createdAt: true,
         },
     });
+};
+
+exports.googleLogin = async ({ code }) => {
+    const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+    const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+    try {
+        // 1. Tukar authorization code dengan access_token
+        const tokenRes = await axios.post(GOOGLE_TOKEN_URL, null, {
+            params: {
+                code,
+                client_id: process.env.GOOGLE_CLIENT_ID,
+                client_secret: process.env.GOOGLE_CLIENT_SECRET,
+                redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+                grant_type: "authorization_code",
+            },
+        });
+
+        const { access_token } = tokenRes.data;
+
+        // 2. Ambil data user dari Google
+        const userRes = await axios.get(GOOGLE_USERINFO_URL, {
+            headers: { Authorization: `Bearer ${access_token}` },
+        });
+
+        const googleUser = userRes.data;
+
+        if (!googleUser.email) {
+            throw new Error("Email Google tidak tersedia");
+        }
+
+        // 3. Cek user di database
+        let user = await prisma.user.findUnique({
+            where: { email: googleUser.email },
+        });
+
+        // 4. Kalau belum ada → buat user baru
+        if (!user) {
+            user = await prisma.user.create({
+                data: {
+                    fullName: googleUser.name,
+                    email: googleUser.email,
+                    isVerified: true,
+                    profilePicture: googleUser.picture,
+                },
+            });
+        }
+
+        // 5. Generate JWT
+        const token = generateToken({
+            id: user.id,
+            role: user.role,
+        });
+
+        return {
+            message: "Login dengan Google berhasil",
+            token,
+            expiresIn: process.env.JWT_EXPIRES_IN || "2h",
+            user: {
+                id: user.id,
+                fullName: user.fullName,
+                email: user.email,
+                role: user.role,
+                profilePicture: user.profilePicture,
+            },
+        };
+    } catch (err) {
+        console.error("Google login error:", err.response?.data || err.message);
+        if (err.response?.data?.error) {
+            console.error("Google API error:", err.response.data.error, err.response.data.error_description);
+        }
+        throw new Error("Login dengan Google gagal");
+    }
 };

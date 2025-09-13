@@ -36,3 +36,9 @@ export const getCurrentUser = async (): Promise<any> => {
     const res = await axiosInstance.get("/auth/me");
     return res.data.user;
 };
+
+// GOOGLE LOGIN
+export const loginWithGoogle = async (code: string): Promise<any> => {
+    const res = await axiosInstance.post("/auth/google", { code });
+    return res.data;
+};

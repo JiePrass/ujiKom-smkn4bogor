@@ -20,6 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { getGoogleAuthUrl } from "@/lib/helper/getGoogleAuthUrl"
 
 
 interface FormData {
@@ -291,15 +292,14 @@ export function RegisterForm({
                         variant="outline"
                         className="w-full text-black hover:bg-gray-50"
                         type="button"
+                        onClick={() => {
+                            window.location.href = getGoogleAuthUrl()
+                        }}
                     >
-                        <Image
-                            src="/icons/google.svg"
-                            alt="Google Icon"
-                            width={16}
-                            height={16}
-                        />
+                        <Image src="/icons/google.svg" alt="Google Icon" width={16} height={16} />
                         Daftar Dengan Google
                     </Button>
+
                 </div>
 
                 <div className="text-center text-sm">

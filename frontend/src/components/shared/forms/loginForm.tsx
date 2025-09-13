@@ -12,6 +12,7 @@ import Swal from "sweetalert2"
 import { useAuth } from "@/context/authContext"
 import { AxiosError } from "axios"
 import { Eye, EyeOff } from "lucide-react"
+import { getGoogleAuthUrl } from "@/lib/helper/getGoogleAuthUrl"
 
 export function LoginForm({
     className,
@@ -129,13 +130,11 @@ export function LoginForm({
                     variant="outline"
                     className="w-full text-black hover:bg-gray-50"
                     type="button"
+                    onClick={() => {
+                        window.location.href = getGoogleAuthUrl()
+                    }}
                 >
-                    <Image
-                        src="/icons/google.svg"
-                        alt="Google Icon"
-                        width={16}
-                        height={16}
-                    />
+                    <Image src="/icons/google.svg" alt="Google Icon" width={16} height={16} />
                     Masuk Dengan Google
                 </Button>
             </div>

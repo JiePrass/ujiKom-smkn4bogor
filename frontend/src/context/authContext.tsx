@@ -2,13 +2,14 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User } from "@/types/model";
-import { loginUser } from "@/lib/api/auth";
+import { loginUser, loginWithGoogle as apiLoginWithGoogle } from "@/lib/api/auth";
 
 interface AuthContextType {
     user: User | null;
     isLoggedIn: boolean;
     loading: boolean;
     login: (email: string, password: string) => Promise<void>;
+    loginWithGoogle: (code: string) => Promise<void>;
     logout: () => void;
 }
 
@@ -26,15 +27,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (token && storedUser) {
             setUser(JSON.parse(storedUser));
             setIsLoggedIn(true);
-        } else {
-            setUser(null);
-            setIsLoggedIn(false);
         }
         setLoading(false);
     }, []);
 
     const login = async (email: string, password: string) => {
         const { token, user } = await loginUser({ email, password });
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        setUser(user);
+        setIsLoggedIn(true);
+    };
+
+    const loginWithGoogle = async (code: string) => {
+        const { token, user } = await apiLoginWithGoogle(code);
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
         setUser(user);
@@ -49,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoggedIn, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, isLoggedIn, loading, login, loginWithGoogle, logout }}>
             {children}
         </AuthContext.Provider>
     );

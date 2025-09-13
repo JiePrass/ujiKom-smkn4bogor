@@ -18,5 +18,6 @@ router.patch(
     upload.single('profilePicture'),
     authController.updateProfile
 );
+router.post("/google", authController.googleLogin);
 
 module.exports = router
