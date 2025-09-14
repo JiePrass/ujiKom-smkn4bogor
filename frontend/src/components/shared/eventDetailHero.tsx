@@ -52,7 +52,7 @@ export default function EventDetailHero({
     const heroSrc = event.backgroundUrl ?? event.flyerUrl;
 
     return (
-        <section className="relative w-full">
+        <section className="relative w-full min-h-[500px]">
             {/* Background image + overlay */}
             <div className="relative w-full h-[360px] md:h-[420px] lg:h-[500px]">
                 <Image

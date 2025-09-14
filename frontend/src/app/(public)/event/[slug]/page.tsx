@@ -167,6 +167,7 @@ export default function EventDetailPage() {
                 onOpenOtp={() => setIsOtpOpen(true)}
                 isWithinAttendWindow={isWithinAttendWindow}
             />
+
             <section className="container mx-auto py-10 grid grid-cols-1 md:grid-cols-3 gap-8 px-6 md:px-0">
                 {/* Recommendation Event */}
                 <div className="flex flex-col gap-6">
@@ -180,8 +181,8 @@ export default function EventDetailPage() {
                 </div>
 
                 {/* Event Details */}
-                <div className="col-span-2">
-                    <p>{event.description}</p>
+                <div className="col-span-2 z-20">
+                    {event.description}
                 </div>
             </section>
 
