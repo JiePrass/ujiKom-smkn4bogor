@@ -9,19 +9,19 @@ import Link from "next/link"
 const slides = [
     {
         bg: "/images/feature-1.png",
-        logo: "/images/SIMKAS.png",
+        logo: "/icons/simkas-main-white.svg",
         title: "Lorem Ipsum Dolor",
         desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
     },
     {
         bg: "/images/feature-2.png",
-        logo: "/images/SIMKAS.png",
+        logo: "/icons/simkas-main-white.svg",
         title: "Aksi Nyata untuk Bumi Hijau",
         desc: "Matikan lampu saat tidak digunakan dan kurangi jejak karbon mulai dari rumah.",
     },
     {
         bg: "/images/feature-3.png",
-        logo: "/images/SIMKAS.png",
+        logo: "/icons/simkas-main-white.svg",
         title: "Lorem Ipsum Dolor",
         desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
     },
@@ -105,7 +105,7 @@ export default function LoginPage() {
                 <div className="flex justify-center md:justify-start">
                     <Link href="/">
                         <Image
-                            src="/images/SIMKAS.png"
+                            src="/icons/simkas-main.svg"
                             alt="Main Logo"
                             width={128}
                             height={128}

@@ -22,7 +22,7 @@ export default function SearchBar({
                 value={value}
                 onChange={onChange}
                 placeholder={placeholder}
-                className="pl-9"
+                className="pl-9 rounded-full"
             />
         </div>
     );

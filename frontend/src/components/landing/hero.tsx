@@ -6,9 +6,9 @@ import { Button } from "../ui/button";
 
 export function HeroSection() {
     return (
-        <section className="container mx-auto relative mt-15 px-6 md:px-0">
+        <section className="relative">
             {/* Background */}
-            <div className="absolute inset-0 rounded-2xl overflow-hidden">
+            <div className="absolute inset-0 overflow-hidden">
                 <Image
                     src="/images/hero-bg.png"
                     alt="Hero Background"
@@ -24,7 +24,7 @@ export function HeroSection() {
                 <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg max-w-3xl">
                     Temukan Daftar dan Ikuti Event Favoritmu
                 </h1>
-                <p className="mt-4 text-sm md:text-base text-white/90 max-w-md">
+                <p className="mt-4 text-sm md:text-base text-white/90 max-w-lg">
                     Dari event menyenangkan hingga acara edukasi, semua bisa kamu ikuti dengan mudah.
                     Daftar cepat, hadir, dan dapatkan pengalaman berharga.
                 </p>

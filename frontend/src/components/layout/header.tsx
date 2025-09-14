@@ -35,6 +35,7 @@ export default function Header() {
     const [showNotif, setShowNotif] = useState(false);
     const [hideHeader, setHideHeader] = useState(false);
     const [lastScrollY, setLastScrollY] = useState(0);
+    const [isTop, setIsTop] = useState(true);
 
     const pathname = usePathname();
     const router = useRouter();
@@ -96,25 +97,30 @@ export default function Header() {
         document.body.classList.toggle("overflow-hidden", isOpen);
     }
 
-    // Sembunyikan header saat scroll ke bawah
-    if (typeof window !== "undefined") {
-        window.addEventListener("scroll", () => {
+    useEffect(() => {
+        const handleScroll = () => {
             const currentScrollY = window.scrollY;
+
+            setIsTop(currentScrollY <= 10); // ✅ true kalau di paling atas
             if (currentScrollY > lastScrollY && currentScrollY > 100) {
                 setHideHeader(true);
             } else {
                 setHideHeader(false);
             }
             setLastScrollY(currentScrollY);
-        });
-    }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [lastScrollY]);
 
     return (
         <>
             <header
-                className={`z-50 fixed top-0 left-0 w-full bg-white transition-transform duration-300 ${hideHeader ? "-translate-y-full" : "translate-y-0"
-                    }`}
-            >
+                className={`z-50 fixed top-0 left-0 w-full transition-all duration-300 
+                ${hideHeader ? "-translate-y-full" : "translate-y-0"} 
+                ${isTop ? "bg-transparent" : "bg-white shadow"} 
+        `}>
                 <motion.div
                     ref={ref}
                     initial="hidden"
@@ -128,11 +134,11 @@ export default function Header() {
                     {/* Logo */}
                     <div className="flex items-center">
                         <Image
-                            src="/images/SIMKAS.png"
+                            src={`${isTop ? "/icons/simkas-main-white" : "/icons/simkas-main"}.svg`}
                             alt="Logo"
                             width={120}
                             height={32}
-                            className="cursor-pointer"
+                            className="cursor-pointer transition-colors"
                             onClick={() => handleNavigation("/")}
                         />
                     </div>
@@ -146,7 +152,11 @@ export default function Header() {
                                     <Link
                                         key={link.key}
                                         href={link.href}
-                                        className={`text-sm font-medium transition-colors ${isActive
+                                        className={`text-sm font-medium transition-colors ${isTop
+                                            ? isActive
+                                                ? "text-white font-semibold"
+                                                : "text-gray-200 hover:text-white"
+                                            : isActive
                                                 ? "text-blue-600 font-semibold"
                                                 : "text-gray-700 hover:text-blue-600"
                                             }`}
@@ -160,7 +170,7 @@ export default function Header() {
 
                     {/* Menu kanan */}
                     <div className="ml-auto hidden md:flex items-center gap-4">
-                        <SearchBar value="" onChange={() => console.log("NOT IMPLEMENT")} />
+                        <SearchBar value="" onChange={() => console.log("NOT IMPLEMENT")} className="bg-white rounded-full" />
                         {isLoggedIn && user ? (
                             <>
                                 <ProfileDropdown userData={user} />
@@ -173,6 +183,7 @@ export default function Header() {
                                     onMarkAsRead={handleMarkAsRead}
                                     onMarkAllAsRead={handleMarkAllAsRead}
                                     onDelete={handleDeleteNotification}
+                                    isTop={isTop}
                                 />
                             </>
                         ) : (
@@ -183,7 +194,10 @@ export default function Header() {
                                 <Button
                                     asChild
                                     variant="outline"
-                                    className="rounded-full border-blue-600 text-blue-600 hover:bg-blue-50"
+                                    className={`rounded-full hover:text-white ${isTop
+                                            ? "border-white text-white hover:backdrop-blur-md hover:bg-white/10"
+                                            : "border-primary text-primary hover:bg-primary"
+                                        }`}
                                 >
                                     <Link href="/register">Register</Link>
                                 </Button>

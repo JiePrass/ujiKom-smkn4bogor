@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Image from "next/image";
-import { attendEvent, getEventById } from "@/lib/api/event";
+import { attendEvent, getEventById, getAllEvents } from "@/lib/api/event";
 import { registerForEvent, checkUserRegistration } from "@/lib/api/registration";
 import { useAuth } from "@/context/authContext";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import RegistrationModal from "@/components/shared/modals/registrationModal";
 import OtpModal from "@/components/shared/modals/otpModal";
+import EventDetailHero from "@/components/shared/eventDetailHero";
+// import EventCardSkeleton from "@/components/shared/cards/eventCardSkeleton";
+// import EventCard from "@/components/shared/cards/eventCard";
+// import { Event } from "@/types/model";
 
 interface EventType {
     id: number;
@@ -21,6 +22,7 @@ interface EventType {
     location: string;
     price: number;
     flyerUrl: string;
+    backgroundUrl?: string;
     participantCount: number;
     createdBy: {
         id: number;
@@ -35,36 +37,53 @@ export default function EventDetailPage() {
     const { isLoggedIn, loading: authLoading } = useAuth();
 
     const [event, setEvent] = useState<EventType | null>(null);
+    // const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
+    // const [loadingRecom, setLoadingRecom] = useState(true);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isOtpOpen, setIsOtpOpen] = useState(false);
     const [paymentProof, setPaymentProof] = useState<File | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [hasRegistered, setHasRegistered] = useState(false);
     const [hasAttended, setHasAttended] = useState(false);
+    const [isWithinAttendWindow, setIsWithinAttendWindow] = useState(false);
 
     useEffect(() => {
         if (!slug) return;
 
         const slugStr = Array.isArray(slug) ? slug[0] : slug;
-        const slugParts = slugStr.split("-");
-        const id = Number(slugParts[slugParts.length - 1]);
+        const parts = slugStr.split("-");
+        const id = Number(parts[parts.length - 1]);
         if (isNaN(id)) {
             router.replace("/404");
             return;
         }
 
-        const fetchEvent = async () => {
+        const fetch = async () => {
             try {
                 const data = await getEventById(id);
                 setEvent(data);
+
+                // // ⬅️ Fetch rekomendasi
+                // try {
+                //     setLoadingRecom(true);
+                //     const all = await getAllEvents();
+                //     const filtered = all.filter((e: EventType) => e.id !== id);
+                //     setEvents(filtered);
+                // } catch (err) {
+                //     console.error("Gagal fetch rekomendasi:", err);
+                // } finally {
+                //     setLoadingRecom(false);
+                // }
 
                 if (isLoggedIn) {
                     try {
                         const res = await checkUserRegistration(id);
                         setHasRegistered(res.isRegistered);
+                        if (res.isAttended) setHasAttended(true);
                     } catch (err) {
-                        console.error("Gagal cek status registrasi:", err);
+                        console.error("Gagal cek registrasi:", err);
                     }
                 }
             } catch (err) {
@@ -75,8 +94,21 @@ export default function EventDetailPage() {
             }
         };
 
-        fetchEvent();
-    }, [slug, router, isLoggedIn]);
+        fetch();
+    }, [slug, isLoggedIn, router]);
+
+    useEffect(() => {
+        if (!event) return;
+        const updateWindow = () => {
+            const start = new Date(`${event.date}T${event.time}`);
+            const now = new Date();
+            const diffMinutes = (now.getTime() - start.getTime()) / (1000 * 60);
+            setIsWithinAttendWindow(diffMinutes >= 0 && diffMinutes <= 120);
+        };
+        updateWindow();
+        const t = setInterval(updateWindow, 30 * 1000);
+        return () => clearInterval(t);
+    }, [event]);
 
     const handleVerifyOtp = async (otp: string) => {
         if (!event) return false;
@@ -93,16 +125,6 @@ export default function EventDetailPage() {
         }
     };
 
-    if (loading || authLoading) return <p>Loading...</p>;
-    if (!event) return <p>Event tidak ditemukan</p>;
-
-    const eventDate = new Date(event.date).toLocaleDateString("id-ID", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
-
     const handleRegisterClick = () => {
         if (!isLoggedIn) {
             toast.error("Silakan login terlebih dahulu untuk mendaftar.");
@@ -118,7 +140,6 @@ export default function EventDetailPage() {
             toast.error("Bukti pembayaran wajib diunggah untuk event berbayar.");
             return;
         }
-
         try {
             setSubmitting(true);
             await registerForEvent(event.id, paymentProof || undefined);
@@ -133,99 +154,37 @@ export default function EventDetailPage() {
         }
     };
 
+    if (loading || authLoading) return <p className="text-center py-20">Loading...</p>;
+    if (!event) return <p className="text-center py-20">Event tidak ditemukan</p>;
+
     return (
-        <div className="max-w-6xl mx-auto px-6 py-10 mt-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Left Section - Flyer & Info */}
-                <div className="md:col-span-1">
-                    <Card className="overflow-hidden shadow-md p-0 mb-6">
-                        <Image
-                            src={`${process.env.NEXT_PUBLIC_API_URL}${event.flyerUrl}`}
-                            alt={event.title}
-                            width={600}
-                            height={800}
-                            className="w-full h-auto object-contain"
-                        />
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">📌 Info Event</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3 text-sm">
-                            <div>
-                                <p className="font-semibold">📅 Tanggal & Waktu</p>
-                                <p>{eventDate}</p>
-                                <p>Pukul {event.time} WIB</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold">📍 Lokasi</p>
-                                <p>{event.location}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold">💰 Harga</p>
-                                <p>{event.price > 0 ? `Rp ${event.price.toLocaleString("id-ID")}` : "Gratis"}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold">👥 Peserta</p>
-                                <p>{event.participantCount} orang</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+        <main>
+            <EventDetailHero
+                event={event}
+                hasRegistered={hasRegistered}
+                hasAttended={hasAttended}
+                onRegister={handleRegisterClick}
+                onOpenOtp={() => setIsOtpOpen(true)}
+                isWithinAttendWindow={isWithinAttendWindow}
+            />
+            <section className="container mx-auto py-10 grid grid-cols-1 md:grid-cols-3 gap-8 px-6 md:px-0">
+                {/* Recommendation Event */}
+                <div className="flex flex-col gap-6">
+                    {/* {loadingRecom ? (
+                        Array.from({ length: 4 }).map((_, i) => <EventCardSkeleton key={i} />)
+                    ) : events.length === 0 ? (
+                        <p className="col-span-4 text-center py-6">Tidak ada event.</p>
+                    ) : (
+                        events.slice(0, 4).map((ev) => <EventCard key={ev.id} event={ev} />)
+                    )} */}
                 </div>
 
-                {/* Right Section - Title, Actions, Description */}
-                <div className="md:col-span-2 flex flex-col space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-3xl">{event.title}</CardTitle>
-                            <CardDescription>
-                                Diselenggarakan oleh <span className="font-medium">{event.createdBy.fullName}</span>
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {/* Buttons */}
-                            {!hasRegistered ? (
-                                <Button className="w-full md:w-auto rounded-full" onClick={handleRegisterClick}>
-                                    Daftar Sekarang
-                                </Button>
-                            ) : (
-                                <div className="flex flex-col md:flex-row gap-3">
-                                    <Button className="w-full md:w-auto rounded-full" disabled>
-                                        ✅ Sudah Mendaftar
-                                    </Button>
-
-                                    {!hasAttended && (
-                                        <Button
-                                            className="w-full md:w-auto rounded-full bg-green-600 hover:bg-green-700"
-                                            onClick={() => setIsOtpOpen(true)}
-                                        >
-                                            Hadir Sekarang
-                                        </Button>
-                                    )}
-
-                                    {hasAttended && (
-                                        <Button className="w-full md:w-auto rounded-full bg-gray-400" disabled>
-                                            ✅ Kehadiran Tercatat
-                                        </Button>
-                                    )}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>📝 Deskripsi</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="leading-relaxed text-gray-700">{event.description}</p>
-                        </CardContent>
-                    </Card>
+                {/* Event Details */}
+                <div className="col-span-2">
+                    <p>{event.description}</p>
                 </div>
-            </div>
+            </section>
 
-            {/* Modal Registrasi */}
             <RegistrationModal
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
@@ -235,10 +194,13 @@ export default function EventDetailPage() {
                 event={event}
             />
 
-            {/* Modal OTP untuk presensi */}
             {isOtpOpen && (
-                <OtpModal onClose={() => setIsOtpOpen(false)} onSubmit={handleVerifyOtp} length={undefined} />
+                <OtpModal
+                    onClose={() => setIsOtpOpen(false)}
+                    onSubmit={handleVerifyOtp}
+                    length={undefined}
+                />
             )}
-        </div>
+        </main>
     );
 }

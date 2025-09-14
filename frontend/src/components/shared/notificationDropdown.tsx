@@ -17,6 +17,7 @@ interface NotificationDropdownProps {
     onMarkAsRead: (id: number) => void;
     onMarkAllAsRead: () => void;
     onDelete: (id: number) => void;
+    isTop?: boolean;
 }
 
 const FILTERS = [
@@ -48,6 +49,7 @@ export default function NotificationDropdown({
     onMarkAsRead,
     onMarkAllAsRead,
     onDelete,
+    isTop = false,
 }: NotificationDropdownProps) {
     const dropdownRef = useRef<HTMLDivElement | null>(null);
     const [activeFilter, setActiveFilter] = useState("unread");
@@ -78,7 +80,10 @@ export default function NotificationDropdown({
         <div className="relative" ref={dropdownRef}>
             {/* Icon Bell */}
             <div className="relative cursor-pointer" onClick={toggle}>
-                <Bell className="w-5 h-5 text-gray-800" />
+                <Bell className={`w-5 h-5 transition-colors ${isTop
+                                            ? "text-white"
+                                            : "text-gray-800"
+                                        }`} />
                 {unreadCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full aspect-square w-4 h-4 flex items-center justify-center">
                         {unreadCount}

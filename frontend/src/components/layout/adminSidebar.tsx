@@ -52,14 +52,13 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
             <SidebarHeader>
                 <div className="flex items-center gap-2 px-3 py-2">
                     <Image
-                        src="/logo.png"
+                        src="/icons/simkas-logo.svg"
                         alt="Logo"
                         width={32}
                         height={32}
-                        className="rounded"
                     />
-                    <span className="font-semibold text-lg truncate">
-                        Event Krabat
+                    <span className="font-semibold text-primary text-lg truncate">
+                        SIMKAS
                     </span>
                 </div>
             </SidebarHeader>
