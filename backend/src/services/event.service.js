@@ -26,7 +26,7 @@ exports.getAllEvents = async () => {
         time: event.time,
         location: event.location,
         flyerUrl: event.flyerUrl,
-        price: event.price, // ← tambahkan ini
+        price: event.price,
         participantCount: event._count.registrations
     }))
 }
@@ -59,7 +59,7 @@ exports.getEventById = async (id) => {
         location: event.location,
         flyerUrl: event.flyerUrl,
         certificateTemplateUrl: event.certificateTemplateUrl,
-        price: event.price, // ← tambahkan ini
+        price: event.price,
         participantCount: event._count.registrations,
         createdBy: event.createdByUser
     }

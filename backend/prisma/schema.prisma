@@ -8,13 +8,13 @@ datasource db {
 }
 
 model User {
-  id           Int     @id @default(autoincrement())
-  fullName     String
-  email        String  @unique
-  phone        String?
-  address      String?
-  education    String?
-  passwordHash String?
+  id             Int            @id @default(autoincrement())
+  fullName       String
+  email          String         @unique
+  phone          String?
+  address        String?
+  education      String?
+  passwordHash   String?
   profilePicture String?
   role           Role           @default(PARTICIPANT)
   isVerified     Boolean        @default(false)
@@ -38,7 +38,7 @@ model EmailToken {
 model Event {
   id            Int            @id @default(autoincrement())
   title         String
-  description   String
+  description   String         @db.MediumText
   date          DateTime
   time          String
   location      String

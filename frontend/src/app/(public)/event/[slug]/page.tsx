@@ -181,9 +181,11 @@ export default function EventDetailPage() {
                 </div>
 
                 {/* Event Details */}
-                <div className="col-span-2 z-20">
-                    {event.description}
-                </div>
+                <div
+                    className="tiptap w-full col-span-2"
+                    dangerouslySetInnerHTML={{ __html: event.description }}
+                />
+
             </section>
 
             <RegistrationModal

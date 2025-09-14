@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { createEvent } from "@/lib/api/event";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -14,6 +13,7 @@ import { CalendarIcon, X } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { cn } from "@/lib/utils";
+import Tiptap from "@/components/shared/tiptap";
 
 interface ApiError {
     error: string;
@@ -210,13 +210,10 @@ export default function CreateEventPage() {
                 </div>
 
                 {/* Deskripsi */}
-                <div>
-                    <Textarea
-                        id="description"
-                        name="description"
+                <div className="min-h-48">
+                    <Tiptap
                         value={form.description}
-                        onChange={handleChange}
-                        required
+                        onChange={(val) => setForm({ ...form, description: val })}
                     />
                 </div>
 
