@@ -38,7 +38,7 @@ import {
     Users,
 } from "lucide-react";
 import SummaryCard from "@/components/shared/cards/sumCard";
-import EventCard from "@/components/shared/cards/eventCard";
+import SmallEventCard from "@/components/shared/cards/smallEventCard";
 
 export default function AdminDashboardPage() {
     const [summary, setSummary] = useState<any>(null);
@@ -87,19 +87,19 @@ export default function AdminDashboardPage() {
 
     const sumItems = [
         {
-            title: "Total Event",
+            title: "Event",
             value: summary?.totalEvents || 0,
             icon: Calendar,
             trend: eventTrend,
         },
         {
-            title: "Total Registrasi",
+            title: "Registrasi",
             value: summary?.totalRegistrations || 0,
             icon: Users,
             trend: { percent: 0, up: true }, // sementara statis
         },
         {
-            title: "Total Kehardiran",
+            title: "Kehadiran",
             value: summary?.totalAttendees || 0,
             icon: CheckCircle,
             trend: attendeeTrend,
@@ -179,10 +179,8 @@ export default function AdminDashboardPage() {
                 {/* Nearest Event */}
                 {summary?.nearestEvent && (
                     <div>
-                        <EventCard
+                        <SmallEventCard
                             event={summary.nearestEvent}
-                            isAdmin={true}
-                            onEventUpdated={fetchData}
                         />
                     </div>
                 )}
