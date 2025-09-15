@@ -16,6 +16,7 @@ model User {
   education      String?
   passwordHash   String?
   profilePicture String?
+  bannerUrl      String?
   role           Role           @default(PARTICIPANT)
   isVerified     Boolean        @default(false)
   createdAt      DateTime       @default(now())

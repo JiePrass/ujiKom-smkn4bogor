@@ -115,13 +115,6 @@ exports.login = async ({ email, password }) => {
     }
 }
 
-exports.updateProfile = async (userId, data) => {
-    return await prisma.user.update({
-        where: { id: userId },
-        data,
-    });
-};
-
 exports.requestPasswordReset = async ({ email }) => {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) throw new Error('Email tidak ditemukan.');

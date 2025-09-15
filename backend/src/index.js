@@ -55,6 +55,10 @@ app.use('/dashboard', dashboardRoutes)
 const certificateRoutes = require('./routes/certificate.route')
 app.use('/certificates', certificateRoutes)
 
+// USER
+const userRoutes = require('./routes/user.route')
+app.use('/user', userRoutes)
+
 // Port
 const PORT = process.env.PORT || 3000
 
