@@ -35,8 +35,15 @@ exports.getUserById = async (userId) => {
 
         // Sertifikat yang dimiliki user
         certificates: user.registrations
-            .filter((reg) => reg.certificate)
-            .map((reg) => reg.certificate),
+        .filter((reg) => reg.certificate)
+        .map((reg) => ({
+            id: reg.certificate.id,
+            issuedAt: reg.certificate.issuedAt,
+            url: reg.certificate.url,
+            eventId: reg.event.id,
+            eventTitle: reg.event.title,
+            eventDate: reg.event.date,
+        })),
     }
 }
 
