@@ -22,7 +22,7 @@ interface EventType {
     location: string;
     price: number;
     flyerUrl: string;
-    backgroundUrl?: string;
+    eventBannerUrl?: string;
     participantCount: number;
     createdBy: {
         id: number;

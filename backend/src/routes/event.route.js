@@ -17,7 +17,10 @@ router.post(
     '/',
     requireLogin,
     requireRole('ADMIN'),
-    upload.fields([{ name: 'flyer', maxCount: 1 }]),
+    upload.fields([
+        { name: 'flyer', maxCount: 1 },
+        { name: 'eventBanner', maxCount: 1 } // 👈 event banner
+    ]),
     eventController.createEvent
 )
 
@@ -25,7 +28,10 @@ router.post(
 router.patch(
     '/:id',
     requireLogin,
-    upload.fields([{ name: 'flyer', maxCount: 1 }]),
+    upload.fields([
+        { name: 'flyer', maxCount: 1 },
+        { name: 'eventBanner', maxCount: 1 } // 👈 event banner
+    ]),
     eventController.updateEvent
 )
 

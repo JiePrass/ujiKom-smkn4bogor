@@ -35,6 +35,8 @@ export interface Event {
     time: string;
     location: string;
     flyerUrl?: string | null;
+    eventBannerUrl?: string | null;
+    eventType: string;
     createdBy: number;
     price: number;
     createdAt: string;
@@ -49,7 +51,6 @@ export interface Registration {
     registeredAt: string;
     paymentProofUrl?: string | null;
     status?: string | null;
-    // Optional relations if API includes them
     attendance?: Attendance | null;
     certificate?: Certificate | null;
 }

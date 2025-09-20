@@ -13,6 +13,7 @@ const storage = multer.diskStorage({
         else if (file.fieldname === 'certificateFile') folder = 'uploads/certificates'
         else if (file.fieldname === 'zipFile') folder = 'uploads/temp'
         else if (file.fieldname === 'bannerUrl') folder = 'uploads/banner-profiles'
+        else if (file.fieldname === 'eventBanner') folder = 'uploads/banner-events'
 
         // Pastikan folder ada
         if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true })

@@ -23,11 +23,13 @@ export const getEventById = async (id: number) => {
 export const createEvent = async (data: {
     title: string;
     description: string;
-    date: string; // format YYYY-MM-DD
-    time: string; // format HH:mm
+    date: string;
+    time: string;
     location: string;
     price?: number;
     flyer: File;
+    eventBanner: File;
+    eventType: string;
 }) => {
     const formData = new FormData();
     formData.append("title", data.title);
@@ -35,9 +37,14 @@ export const createEvent = async (data: {
     formData.append("date", data.date);
     formData.append("time", data.time);
     formData.append("location", data.location);
+    formData.append("eventType", data.eventType);
     formData.append("price", String(data.price ?? 0));
+
     if (data.flyer) {
         formData.append("flyer", data.flyer);
+    }
+    if (data.eventBanner) {
+        formData.append("eventBanner", data.eventBanner);
     }
 
     const res = await axiosInstance.post("/events", formData, {
@@ -59,6 +66,7 @@ export const updateEvent = async (
         location?: string;
         price?: number;
         flyer?: File;
+        eventBanner?: File;
     }
 ) => {
     const formData = new FormData();
@@ -71,6 +79,7 @@ export const updateEvent = async (
         formData.append("price", String(data.price));
     }
     if (data.flyer) formData.append("flyer", data.flyer);
+    if (data.eventBanner) formData.append("eventBanner", data.eventBanner)
 
     const res = await axiosInstance.patch(`/events/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },

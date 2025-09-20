@@ -37,18 +37,20 @@ model EmailToken {
 }
 
 model Event {
-  id            Int            @id @default(autoincrement())
-  title         String
-  description   String         @db.MediumText
-  date          DateTime
-  time          String
-  location      String
-  flyerUrl      String?
-  createdBy     Int
-  price         Int            @default(0)
-  createdByUser User           @relation("UserCreatedEvents", fields: [createdBy], references: [id])
-  registrations Registration[]
-  createdAt     DateTime       @default(now())
+  id             Int            @id @default(autoincrement())
+  title          String
+  description    String         @db.MediumText
+  date           DateTime
+  time           String
+  location       String
+  flyerUrl       String?
+  eventBannerUrl String?
+  eventType      String         @default("Lainnya")
+  createdBy      Int
+  price          Int            @default(0)
+  createdByUser  User           @relation("UserCreatedEvents", fields: [createdBy], references: [id])
+  registrations  Registration[]
+  createdAt      DateTime       @default(now())
 }
 
 model Registration {

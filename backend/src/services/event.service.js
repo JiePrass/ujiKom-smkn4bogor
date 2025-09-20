@@ -21,13 +21,11 @@ exports.getAllEvents = async () => {
     return events.map(event => ({
         id: event.id,
         title: event.title,
-        description: event.description,
         date: event.date,
         time: event.time,
         location: event.location,
         flyerUrl: event.flyerUrl,
         price: event.price,
-        participantCount: event._count.registrations
     }))
 }
 
@@ -58,6 +56,8 @@ exports.getEventById = async (id) => {
         time: event.time,
         location: event.location,
         flyerUrl: event.flyerUrl,
+        eventBannerUrl: event.eventBannerUrl,
+        eventType: event.eventType,
         certificateTemplateUrl: event.certificateTemplateUrl,
         price: event.price,
         participantCount: event._count.registrations,
@@ -72,11 +72,15 @@ exports.createEvent = async (req, user) => {
         date,
         time,
         location,
+        eventType,
         price = 0
     } = req.body
 
     const flyerFile = req.files['flyer']?.[0]
     const flyerUrl = flyerFile ? `/uploads/flyers/${flyerFile.filename}` : null
+
+    const eventBannerFile = req.files['eventBanner']?.[0]
+    const eventBannerUrl = eventBannerFile ? `/uploads/banner-events/${eventBannerFile.filename}` : null
 
     // Validasi H-3
     const eventDate = dayjs(date)
@@ -94,6 +98,8 @@ exports.createEvent = async (req, user) => {
             location,
             price: parseInt(price),
             flyerUrl,
+            eventBannerUrl,
+            eventType,
             createdBy: user.id
         }
     })
@@ -109,7 +115,8 @@ exports.updateEvent = async (req, user) => {
         date,
         time,
         location,
-        price
+        price,
+        eventType
     } = req.body
 
     // Cari event
@@ -161,6 +168,17 @@ exports.updateEvent = async (req, user) => {
         flyerUrl = `/uploads/flyers/${flyerFile.filename}`
     }
 
+    // Handle event banner update
+    let eventBannerUrl = existingEvent.eventBannerUrl
+    const eventBannerFile = req.files?.['eventBanner']?.[0]
+    if (eventBannerFile) {
+        if (eventBannerUrl) {
+            const oldPath = path.resolve(process.cwd(), 'uploads', 'banner-events', path.basename(eventBannerUrl))
+            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath)
+        }
+        eventBannerUrl = `/uploads/event-banners/${eventBannerFile.filename}`
+    }
+
     // Update event
     const updatedEvent = await prisma.event.update({
         where: { id: parseInt(id) },
@@ -171,7 +189,9 @@ exports.updateEvent = async (req, user) => {
             time: time ?? existingEvent.time,
             location: location ?? existingEvent.location,
             price: price !== undefined ? parseInt(price) : existingEvent.price,
-            flyerUrl
+            flyerUrl,
+            eventBannerUrl,
+            eventType: eventType ?? existingEvent.eventType
         }
     })
 
@@ -194,6 +214,12 @@ exports.deleteEvent = async (id, user) => {
         if (fs.existsSync(flyerPath)) {
             fs.unlinkSync(flyerPath)
         }
+    }
+
+    // Hapus event banner jika ada
+    if (event.eventBannerUrl) {
+        const bannerPath = path.resolve(process.cwd(), 'uploads', 'banner-events', path.basename(event.eventBannerUrl))
+        if (fs.existsSync(bannerPath)) fs.unlinkSync(bannerPath)
     }
 
     // Hapus semua relasi terlebih dahulu

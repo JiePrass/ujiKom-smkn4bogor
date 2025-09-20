@@ -16,6 +16,7 @@ interface EventType {
     location: string;
     price: number;
     flyerUrl: string;
+    eventBannerUrl?: string;
     backgroundUrl?: string;
     participantCount: number;
     createdBy: {
@@ -49,7 +50,9 @@ export default function EventDetailHero({
     onOpenOtp: () => void;
     isWithinAttendWindow: boolean;
 }) {
-    const heroSrc = event.backgroundUrl ?? event.flyerUrl;
+    const heroSrc = event.eventBannerUrl ?? event.flyerUrl;
+
+    console.log("Hero src:", event.eventBannerUrl);
 
     return (
         <section className="relative w-full min-h-[500px]">

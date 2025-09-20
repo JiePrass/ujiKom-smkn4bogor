@@ -57,6 +57,7 @@ export default function Tiptap({ value, onChange }: TiptapProps) {
             {/* Toolbar */}
             <div className="flex flex-wrap items-center gap-2 border-b p-2">
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().setParagraph().run()}
                     className={btnClass(editor.isActive("paragraph"))}
                 >
@@ -64,12 +65,14 @@ export default function Tiptap({ value, onChange }: TiptapProps) {
                 </button>
                 {/* Headings */}
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
                     className={btnClass(editor.isActive("heading", { level: 1 }))}
                 >
                     <Heading1 className="w-4 h-4" />
                 </button>
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                     className={btnClass(editor.isActive("heading", { level: 2 }))}
                 >
@@ -84,12 +87,14 @@ export default function Tiptap({ value, onChange }: TiptapProps) {
 
                 {/* Lists */}
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().toggleBulletList().run()}
                     className={btnClass(editor.isActive("bulletList"))}
                 >
                     <List className="w-4 h-4" />
                 </button>
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().toggleOrderedList().run()}
                     className={btnClass(editor.isActive("orderedList"))}
                 >
@@ -98,24 +103,28 @@ export default function Tiptap({ value, onChange }: TiptapProps) {
 
                 {/* Align */}
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().setTextAlign("left").run()}
                     className={btnClass(editor.isActive({ textAlign: "left" }))}
                 >
                     <AlignLeft className="w-4 h-4" />
                 </button>
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().setTextAlign("center").run()}
                     className={btnClass(editor.isActive({ textAlign: "center" }))}
                 >
                     <AlignCenter className="w-4 h-4" />
                 </button>
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().setTextAlign("right").run()}
                     className={btnClass(editor.isActive({ textAlign: "right" }))}
                 >
                     <AlignRight className="w-4 h-4" />
                 </button>
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().setTextAlign("justify").run()}
                     className={btnClass(editor.isActive({ textAlign: "justify" }))}
                 >
@@ -124,12 +133,14 @@ export default function Tiptap({ value, onChange }: TiptapProps) {
 
                 {/* Undo / Redo */}
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().undo().run()}
                     className="p-2 rounded hover:bg-gray-100 transition"
                 >
                     <Undo className="w-4 h-4" />
                 </button>
                 <button
+                    type="button"
                     onClick={() => editor.chain().focus().redo().run()}
                     className="p-2 rounded hover:bg-gray-100 transition"
                 >
