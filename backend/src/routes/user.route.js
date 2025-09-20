@@ -7,10 +7,13 @@ const upload = require('../middlewares/upload')
 
 router.get('/:id', requireLogin, requireUserId, userController.getUserById);
 router.patch(
-    '/edit',
+    '/edit/:id',
     requireLogin,
     requireUserId,
-    upload.single('profilePicture'),
+    upload.fields([
+        { name: 'profilePicture', maxCount: 1 },
+        { name: 'bannerUrl', maxCount: 1 },
+    ]),
     userController.updateProfile
 );
 

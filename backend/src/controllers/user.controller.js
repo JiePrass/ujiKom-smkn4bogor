@@ -18,9 +18,14 @@ exports.updateProfile = async (req, res) => {
         const userId = req.user.id;
         const { fullName, phone, address, education } = req.body;
 
-        let profilePicture;
-        if (req.file) {
-        profilePicture = `/uploads/profile-pictures/${req.file.filename}`;
+        let profilePicture, bannerUrl;
+
+        if (req.files?.profilePicture) {
+        profilePicture = `/uploads/profile-pictures/${req.files.profilePicture[0].filename}`;
+        }
+
+        if (req.files?.bannerUrl) {
+        bannerUrl = `/uploads/banner-profiles/${req.files.bannerUrl[0].filename}`;
         }
 
         const updateData = {
@@ -29,6 +34,7 @@ exports.updateProfile = async (req, res) => {
         address,
         education,
         ...(profilePicture && { profilePicture }),
+        ...(bannerUrl && { bannerUrl }),
         };
 
         const response = await userService.updateProfile(userId, updateData);
@@ -38,3 +44,4 @@ exports.updateProfile = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+

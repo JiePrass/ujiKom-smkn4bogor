@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Calendar, FileText, Filter, Edit, Inbox } from "lucide-react";
+import { Calendar, FileText, Filter, Inbox } from "lucide-react";
 import { getUserProfile } from "@/lib/api/user";
 import { useAuth } from "@/context/authContext";
 import {
@@ -24,6 +24,7 @@ import EventCard from "@/components/shared/cards/eventCard";
 import CertificateSkeleton from "@/components/shared/cards/certificateCardSkeleton";
 import CertificateCard from "@/components/shared/cards/certificateCard";
 import { Event } from "@/types/model";
+import EditProfileModal from "@/components/shared/modals/editProfileModal";
 
 interface Certificate {
     id: number;
@@ -144,7 +145,7 @@ export default function ProfilePage() {
             <div className="relative -z-10 h-64 w-full">
                 {profile.bannerUrl ? (
                     <Image
-                        src={profile.bannerUrl}
+                        src={`${process.env.NEXT_PUBLIC_API_URL}${profile.bannerUrl}`}
                         alt="Banner"
                         fill
                         className="object-cover"
@@ -158,7 +159,7 @@ export default function ProfilePage() {
                 <div className="-mt-24 flex gap-4 items-end">
                     {profile.profilePicture ? (
                         <Image
-                            src={profile.profilePicture}
+                            src={`${process.env.NEXT_PUBLIC_API_URL}${profile.profilePicture}`}
                             alt={profile.fullName}
                             width={100}
                             height={100}
@@ -174,7 +175,13 @@ export default function ProfilePage() {
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-4">
                                 <h2 className="text-3xl font-semibold">{profile.fullName}</h2>
-                                <Edit className="text-gray-600" />
+                                <EditProfileModal
+                                    userId={profile.id}
+                                    profile={profile}
+                                    onUpdated={() => {
+                                        if (authUser?.id) getUserProfile(authUser.id).then(setProfile);
+                                    }}
+                                />
                             </div>
                             <div>
                                 <p className="text-gray-600">{profile.email}</p>
