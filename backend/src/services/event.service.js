@@ -22,9 +22,12 @@ exports.getAllEvents = async () => {
         id: event.id,
         title: event.title,
         date: event.date,
+        description: event.description,
         time: event.time,
         location: event.location,
         flyerUrl: event.flyerUrl,
+        eventBannerUrl: event.eventBannerUrl,
+        eventType: event.eventType,
         price: event.price,
     }))
 }

@@ -31,7 +31,7 @@ export interface Event {
     id: number;
     title: string;
     description: string;
-    date: string; // ISO date
+    date: string;
     time: string;
     location: string;
     flyerUrl?: string | null;
