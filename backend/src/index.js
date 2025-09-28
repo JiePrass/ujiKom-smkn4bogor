@@ -59,6 +59,10 @@ app.use('/certificates', certificateRoutes)
 const userRoutes = require('./routes/user.route')
 app.use('/user', userRoutes)
 
+// GALLERY
+const galleryRoutes = require('./routes/gallery.route')
+app.use('/galleries', galleryRoutes)
+
 // Port
 const PORT = process.env.PORT || 3000
 
