@@ -123,7 +123,11 @@ export default function EditProfileModal({
                     <div className="relative w-full h-40 bg-gray-800 rounded-md overflow-hidden">
                         {previewBanner ? (
                             <Image
-                                src={`${process.env.NEXT_PUBLIC_API_URL}${previewBanner}`}
+                                src={
+                                    previewBanner.startsWith("blob:")
+                                        ? previewBanner
+                                        : `${process.env.NEXT_PUBLIC_API_URL}${previewBanner}`
+                                }
                                 alt="Banner Preview"
                                 fill
                                 className="object-cover"
@@ -153,7 +157,11 @@ export default function EditProfileModal({
                         <div className="w-32 h-32 rounded-full bg-gray-600 overflow-hidden relative ring-4 ring-background">
                             {previewProfile ? (
                                 <Image
-                                    src={`${process.env.NEXT_PUBLIC_API_URL}${previewProfile}`}
+                                    src={
+                                        previewProfile.startsWith("blob:")
+                                            ? previewProfile
+                                            : `${process.env.NEXT_PUBLIC_API_URL}${previewProfile}`
+                                    }
                                     alt="Profile Preview"
                                     fill
                                     className="object-cover"

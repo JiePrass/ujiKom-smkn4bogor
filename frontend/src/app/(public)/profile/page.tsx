@@ -153,6 +153,7 @@ export default function ProfilePage() {
                 ) : (
                     <div className="w-full h-full bg-gray-800" />
                 )}
+                <div className="absolute inset-0 bg-black/40" />
             </div>
 
             <div className="container mx-auto">

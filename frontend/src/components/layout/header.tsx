@@ -25,8 +25,8 @@ import { Notification } from "@/types/model";
 
 const navLinks = [
     { key: "beranda", label: "Beranda", href: "/" },
-    { key: "tentang", label: "Tentang", href: "/tentang" },
     { key: "event", label: "Event", href: "/events" },
+    { key: "galeri", label: "Galeri", href: "/galeri" },
     { key: "artikel", label: "Artikel", href: "/artikel" },
 ];
 
