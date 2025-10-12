@@ -27,7 +27,7 @@ const slides = [
     },
 ]
 
-export default function LoginPage() {
+export default function RegisterPage() {
     const [current, setCurrent] = useState(0)
 
     useEffect(() => {

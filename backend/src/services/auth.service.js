@@ -93,8 +93,6 @@ exports.login = async ({ email, password }) => {
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user) throw new Error('Akun tidak ditemukan.')
 
-    if (!user.isVerified) throw new Error('Email belum diverifikasi.')
-
     const valid = await bcrypt.compare(password, user.passwordHash)
     if (!valid) throw new Error('Password salah.')
 
@@ -261,4 +259,41 @@ exports.googleLogin = async ({ code }) => {
         }
         throw new Error("Login dengan Google gagal");
     }
+};
+
+exports.resendVerificationEmail = async ({ email }) => {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) throw new Error('User tidak ditemukan.');
+    if (user.isVerified) throw new Error('Email sudah diverifikasi.');
+
+    // Generate OTP baru
+    const otp = generateOtp();
+
+    // Hapus token lama (jika ada)
+    await prisma.emailToken.deleteMany({
+        where: { userId: user.id, type: 'VERIFICATION' }
+    });
+
+    // Simpan token baru
+    await prisma.emailToken.create({
+        data: {
+            userId: user.id,
+            otp,
+            type: 'VERIFICATION',
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 menit
+        },
+    });
+
+    // Kirim email
+    const emailHtml = `
+        <h3>Verifikasi Email</h3>
+        <p>Halo ${user.fullName},</p>
+        <p>Kode OTP baru Anda adalah:</p>
+        <h2>${otp}</h2>
+        <p>Kode ini berlaku selama 5 menit. Jangan bagikan ke siapa pun.</p>
+    `;
+
+    await mailer(user.email, 'Verifikasi Email Akun Event App', emailHtml);
+
+    return { message: 'Kode verifikasi baru telah dikirim ke email Anda.' };
 };

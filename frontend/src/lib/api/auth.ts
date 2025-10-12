@@ -13,6 +13,12 @@ export const verifyEmail = async (data: { email: string; otp: string }): Promise
     return res.data;
 };
 
+// RESEND VERIFY EMAIL
+export const resendVerifyEmail = async (email: string): Promise<{ message: string }> => {
+    const res = await axiosInstance.post("/auth/resend-verification", { email });
+    return res.data;
+};
+
 // LOGIN
 export const loginUser = async (data: { email: string; password: string }): Promise<any> => {
     const res = await axiosInstance.post("/auth/login", data);

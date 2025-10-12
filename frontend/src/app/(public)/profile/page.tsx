@@ -45,6 +45,7 @@ interface UserProfile {
     bannerUrl: string | null;
     certificates: Certificate[];
     events: Event[];
+    isVerified: boolean
 }
 
 function getInitials(name: string): string {
@@ -139,6 +140,8 @@ export default function ProfilePage() {
         </div>
     );
 
+    console.log("Data:", profile)
+
     return (
         <div>
             {/* Banner */}
@@ -185,7 +188,25 @@ export default function ProfilePage() {
                                 />
                             </div>
                             <div>
-                                <p className="text-gray-600">{profile.email}</p>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-gray-600">{profile.email}</p>
+
+                                    {!profile?.isVerified && (
+                                        <div className="flex items-center gap-1 text-red-600 text-sm">
+                                            <span className="flex items-center gap-1">
+                                                Belum diverifikasi
+                                            </span>
+                                            <Button
+                                                variant="link"
+                                                size="sm"
+                                                className="text-blue-600 underline p-0"
+                                                onClick={() => (window.location.href = `/verify-email?email=${profile.email}`)}
+                                            >
+                                                Verifikasi sekarang
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
                                 <p className="text-gray-600">{profile.education}</p>
                             </div>
                         </div>
