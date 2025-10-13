@@ -80,3 +80,93 @@ export interface Notification {
     isRead: boolean;
     createdAt: string;
 }
+
+// === GALLERY RELATED TYPES ===
+
+// Media dalam satu galeri
+export interface GalleryMedia {
+    id: number;
+    galleryId: number;
+    mediaUrl: string;
+}
+
+// Komentar galeri (bisa nested)
+export interface GalleryComment {
+    id: number;
+    galleryId: number;
+    userId: number;
+    content: string;
+    parentId?: number | null;
+    createdAt: string;
+    user: {
+        id: number;
+        fullName: string;
+        profilePicture?: string | null;
+    };
+    replies?: GalleryComment[];
+}
+
+// Like galeri
+export interface GalleryLike {
+    id: number;
+    galleryId: number;
+    userId: number;
+    user?: {
+        id: number;
+        fullName: string;
+        profilePicture?: string | null;
+    };
+}
+
+// Gallery utama
+export interface Gallery {
+    id: number;
+    eventId: number;
+    userId: number;
+    caption?: string | null;
+    createdAt: string;
+
+    // Relasi
+    user?: {
+        id: number;
+        fullName: string;
+        profilePicture?: string | null;
+    };
+    event?: {
+        id: number;
+        title: string;
+    };
+    media?: GalleryMedia[];
+    likes?: GalleryLike[];
+    comments?: GalleryComment[];
+
+    // Count
+    _count?: {
+        likes: number;
+        comments: number;
+    };
+}
+
+// === REQUEST PAYLOAD TYPES ===
+
+// Upload galeri baru (admin)
+export interface UploadGalleryData {
+    eventId: number;
+    caption?: string;
+    media: File[];
+}
+
+// Tambah komentar baru
+export interface AddGalleryCommentData {
+    content: string;
+    parentId?: number | null;
+}
+
+// Tambahkan di samping tipe Gallery yang sudah ada
+export interface PaginatedGalleries {
+    items: Gallery[];
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+}
+

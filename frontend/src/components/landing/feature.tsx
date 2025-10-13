@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function FeatureSection() {
     return (
-        <section className="container mx-auto px-6 md:px-0">
+        <section className="container mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* 1. Text Card - Dark */}
                 <div className="bg-primary text-white rounded-xl p-6 flex flex-col aspect-square justify-between">

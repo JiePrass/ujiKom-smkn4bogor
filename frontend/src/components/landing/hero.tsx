@@ -20,7 +20,7 @@ export function HeroSection() {
             </div>
 
             {/* Hero Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-28 pb-12">
+            <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-28 pb-12">
                 <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg max-w-3xl">
                     Temukan Daftar dan Ikuti Event Favoritmu
                 </h1>
