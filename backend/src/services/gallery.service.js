@@ -33,16 +33,30 @@ async function createGallery(eventId, userId, mediaUrls, caption) {
 
 // === GET ALL GALLERIES ===
 async function getAllGalleries(page = 1, limit = 20) {
-    return prisma.gallery.findMany({
-        skip: (page - 1) * limit,
-        take: limit,
-        include: {
-            media: true,
-            user: { select: { id: true, fullName: true, profilePicture: true } },
-            _count: { select: { likes: true, comments: true } },
-        },
-        orderBy: { createdAt: "desc" },
-    });
+    const skip = (page - 1) * limit;
+
+    const [galleries, totalItems] = await Promise.all([
+        prisma.gallery.findMany({
+            skip,
+            take: limit,
+            include: {
+                media: true,
+                user: { select: { id: true, fullName: true, profilePicture: true } },
+                _count: { select: { likes: true, comments: true } },
+            },
+            orderBy: { createdAt: "desc" },
+        }),
+        prisma.gallery.count(), // hitung total seluruh galeri
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+        items: galleries,
+        totalItems,
+        totalPages,
+        currentPage: page,
+    };
 }
 
 // === GET GALLERY DETAIL ===

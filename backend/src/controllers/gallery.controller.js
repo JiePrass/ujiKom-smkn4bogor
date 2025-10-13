@@ -24,12 +24,14 @@ async function getAllGalleries(req, res) {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
-        const galleries = await galleryService.getAllGalleries(page, limit);
-        return res.json(galleries);
+        const result = await galleryService.getAllGalleries(page, limit);
+        return res.json(result);
     } catch (err) {
+        console.error(err);
         return res.status(500).json({ error: "Failed to fetch galleries" });
     }
 }
+
 
 async function getGalleryDetail(req, res) {
     try {

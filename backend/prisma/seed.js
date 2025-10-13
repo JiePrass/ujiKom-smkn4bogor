@@ -6,6 +6,8 @@ const prisma = new PrismaClient()
 async function main() {
     const passwordHash = await bcrypt.hash("password123", 10)
 
+    console.log("🔹 Menjalankan seeder...")
+
     // ===== Admin Seeder =====
     const admin = await prisma.user.upsert({
         where: { email: "admin@example.com" },
@@ -41,7 +43,7 @@ async function main() {
         )
     )
 
-    // ===== Generate Events by Month =====
+    // ===== Event Seeder =====
     const now = new Date()
     const year = now.getFullYear()
 
@@ -52,7 +54,6 @@ async function main() {
     for (let month = 0; month < 12; month++) {
         for (let j = 0; j < 2; j++) {
             const eventDate = new Date(year, month, Math.floor(Math.random() * 25) + 1)
-
             eventsData.push({
                 title: `Event Bulan ${month + 1} - ${j + 1}`,
                 description: `Kegiatan menarik bulan ${month + 1}`,
@@ -60,8 +61,10 @@ async function main() {
                 time: j === 0 ? "09:00" : "14:00",
                 location: locations[(month + j) % locations.length],
                 flyerUrl: `/uploads/flyers/event-${month + 1}-${j + 1}.jpg`,
+                eventBannerUrl: `/uploads/banners/banner-${month + 1}-${j + 1}.jpg`,
                 createdBy: admin.id,
                 price: prices[(month + j) % prices.length],
+                eventType: "Workshop",
             })
         }
     }
@@ -69,16 +72,17 @@ async function main() {
     await prisma.event.createMany({ data: eventsData })
     const allEvents = await prisma.event.findMany()
 
-    // ===== Registrations, Attendance & Certificates =====
+    // ===== Registration + Attendance + Certificate Seeder =====
     for (const user of participants) {
-        const randomEvents = allEvents.filter(() => Math.random() > 0.5) // 50% chance ikut event
+        const randomEvents = allEvents.filter(() => Math.random() > 0.5) // 50% ikut event
 
         for (const event of randomEvents) {
             const registration = await prisma.registration.create({
                 data: {
                     userId: user.id,
                     eventId: event.id,
-                    status: Math.random() > 0.2 ? "APPROVED" : "PENDING", // sebagian pending
+                    status: Math.random() > 0.2 ? "APPROVED" : "PENDING",
+                    paymentProofUrl: `/uploads/payments/${user.id}-${event.id}.jpg`,
                 },
             })
 
@@ -97,12 +101,11 @@ async function main() {
         }
     }
 
-    // ===== Notifications Seeder =====
+    // ===== Notification Seeder =====
     const notificationsData = []
 
     for (const user of participants) {
-        const randomEvents = allEvents.filter(() => Math.random() > 0.7) // lebih jarang notif
-
+        const randomEvents = allEvents.filter(() => Math.random() > 0.7)
         for (const event of randomEvents) {
             notificationsData.push({
                 userId: user.id,
@@ -122,7 +125,6 @@ async function main() {
             message: "Ada 5 peserta baru mendaftar minggu ini",
             type: "SYSTEM",
             isRead: false,
-            createdAt: new Date(),
         },
         {
             userId: admin.id,
@@ -130,21 +132,82 @@ async function main() {
             message: "Beberapa event sudah penuh kapasitas",
             type: "SYSTEM",
             isRead: true,
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
         }
     )
-
 
     if (notificationsData.length > 0) {
         await prisma.notification.createMany({ data: notificationsData })
     }
 
-    console.log("✅ Seeder berhasil ditambahkan")
+    // // ===== Gallery Seeder =====
+    // for (const event of allEvents.slice(0, 10)) {
+    //     for (let i = 0; i < 3; i++) {
+    //         const user = participants[Math.floor(Math.random() * participants.length)]
+    //         const gallery = await prisma.gallery.create({
+    //             data: {
+    //                 eventId: event.id,
+    //                 userId: user.id,
+    //                 caption: `Kenangan di ${event.title}`,
+    //                 media: {
+    //                     create: [
+    //                         { mediaUrl: `/uploads/gallery/event${event.id}-user${user.id}-1.jpg` },
+    //                         { mediaUrl: `/uploads/gallery/event${event.id}-user${user.id}-2.jpg` },
+    //                     ],
+    //                 },
+    //             },
+    //         })
+
+    //         // Likes
+    //         const likeUsers = participants.filter(() => Math.random() > 0.8)
+    //         for (const liker of likeUsers) {
+    //             await prisma.galleryLike.create({
+    //                 data: {
+    //                     galleryId: gallery.id,
+    //                     userId: liker.id,
+    //                 },
+    //             })
+    //         }
+
+    //         // Comments
+    //         const commentUsers = participants.filter(() => Math.random() > 0.7)
+    //         for (const commenter of commentUsers) {
+    //             const comment = await prisma.galleryComment.create({
+    //                 data: {
+    //                     galleryId: gallery.id,
+    //                     userId: commenter.id,
+    //                     content: `Komentar dari ${commenter.fullName} untuk ${event.title}`,
+    //                 },
+    //             })
+
+    //             // Occasionally add replies and reports
+    //             if (Math.random() > 0.8) {
+    //                 await prisma.galleryComment.create({
+    //                     data: {
+    //                         galleryId: gallery.id,
+    //                         userId: user.id,
+    //                         content: `Balasan dari ${user.fullName}`,
+    //                         parentId: comment.id,
+    //                     },
+    //                 })
+
+    //                 await prisma.galleryCommentReport.create({
+    //                     data: {
+    //                         commentId: comment.id,
+    //                         userId: admin.id,
+    //                         reason: "Komentar tidak pantas",
+    //                     },
+    //                 })
+    //             }
+    //         }
+    //     }
+    // }
+
+    console.log("✅ Seeder berhasil dijalankan sepenuhnya.")
 }
 
 main()
     .catch((e) => {
-        console.error(e)
+        console.error("❌ Seeder gagal:", e)
         process.exit(1)
     })
     .finally(async () => {
