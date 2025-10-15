@@ -2,8 +2,9 @@ import * as React from "react";
 import {
     LayoutDashboard,
     Calendar,
-    Newspaper,
-    FileBadge
+    Camera,
+    FileBadge,
+    Megaphone
 } from "lucide-react";
 
 import { NavMain } from "@/components/shared/adminSidebar/navMain";
@@ -31,18 +32,23 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
             ]
         },
         {
-            title: "Artikel",
+            title: "Galeri",
             url: "#",
-            icon: Newspaper,
+            icon: Camera,
             items: [
-                { title: "Manajemen Artikel", url: "/admin/articles" },
-                { title: "Buat Artikel", url: "/admin/articles/create" },
+                { title: "Manajemen Galeri", url: "/admin/gallery" },
+                { title: "Buat Galeri", url: "/admin/gallery/create" },
             ]
         },
         {
             title: "Sertifikat",
             url: "/admin/certificate",
             icon: FileBadge,
+        },
+        {
+            title: "Laporan Komentar",
+            url: "/admin/reports-comments",
+            icon: Megaphone,
         },
     ]
 
