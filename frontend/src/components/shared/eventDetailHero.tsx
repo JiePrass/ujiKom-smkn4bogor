@@ -52,14 +52,12 @@ export default function EventDetailHero({
 }) {
     const heroSrc = event.eventBannerUrl ?? event.flyerUrl;
 
-    console.log("Hero src:", event.eventBannerUrl);
-
     return (
         <section className="relative w-full min-h-[500px]">
             {/* Background image + overlay */}
             <div className="relative w-full h-[360px] md:h-[420px] lg:h-[500px]">
                 <Image
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${heroSrc}`}
+                    src={`${heroSrc}`}
                     alt={event.title}
                     fill
                     className="object-cover object-center filter grayscale contrast-90"
@@ -74,7 +72,7 @@ export default function EventDetailHero({
                     <div className="md:col-span-1 flex justify-center md:justify-start">
                         <div className="w-40 md:w-52 lg:w-80 -mt-6 md:-mt-12 shadow-lg">
                             <Image
-                                src={`${process.env.NEXT_PUBLIC_API_URL}${event.flyerUrl}`}
+                                src={`${event.flyerUrl}`}
                                 alt={`${event.title} flyer`}
                                 width={400}
                                 height={600}

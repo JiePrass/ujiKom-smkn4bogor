@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         port: "2304", // sesuaikan port backend kamu
         pathname: "/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
     ],
   },
 };

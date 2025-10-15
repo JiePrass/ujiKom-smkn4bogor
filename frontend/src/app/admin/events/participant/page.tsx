@@ -328,7 +328,7 @@ export default function AdminParticipantPage() {
                             src={
                                 proofPreview.startsWith("http")
                                     ? proofPreview
-                                    : `${process.env.NEXT_PUBLIC_API_URL}${proofPreview}`
+                                    : `${proofPreview}`
                             }
                             alt="Bukti Pembayaran"
                             className="w-full rounded-lg"

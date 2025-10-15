@@ -3,6 +3,7 @@ require('./cron/notification.cron')
 const express = require('express')
 const cors = require('cors')
 const { PrismaClient } = require('@prisma/client')
+const multer = require('multer');
 
 const app = express()
 const prisma = new PrismaClient()
@@ -65,6 +66,22 @@ app.use('/galleries', galleryRoutes)
 
 // Port
 const PORT = process.env.PORT || 3000
+
+app.use((err, req, res, next) => {
+  console.error("🔥 Global Error Handler:", err);
+
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  if (err.name === "Error" && err.http_code) {
+    return res.status(err.http_code).json({ error: err.message });
+  }
+
+  return res
+    .status(500)
+    .json({ error: err.message || "Internal Server Error", details: err });
+});
 
 // Start server
 checkDB().then(() => {

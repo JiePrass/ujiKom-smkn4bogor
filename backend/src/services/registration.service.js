@@ -1,45 +1,66 @@
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client');
 const { Parser } = require("json2csv");
-const prisma = new PrismaClient()
+const cloudinary = require('cloudinary').v2;
+const prisma = new PrismaClient();
 
-// Fungsi pembuat token pendek dan mudah diketik
+// === Konfigurasi Cloudinary ===
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// === Fungsi pembuat token pendek ===
 function generateAlphanumericToken(length = 8) {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Hindari O/0, I/1
-    let token = ''
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Hindari O/0, I/1
+    let token = '';
     for (let i = 0; i < length; i++) {
-        token += chars[Math.floor(Math.random() * chars.length)]
+        token += chars[Math.floor(Math.random() * chars.length)];
     }
-    return token
+    return token;
 }
 
+// === Fungsi utama registrasi event ===
 exports.registerToEvent = async (eventId, req, user) => {
     const event = await prisma.event.findUnique({
         where: { id: parseInt(eventId) }
-    })
-    if (!event) throw new Error('Event tidak ditemukan.')
+    });
+    if (!event) throw new Error('Event tidak ditemukan.');
 
     const alreadyRegistered = await prisma.registration.findFirst({
-        where: {
-            userId: user.id,
-            eventId: event.id
-        }
-    })
-    if (alreadyRegistered) throw new Error('Anda sudah terdaftar di event ini.')
+        where: { userId: user.id, eventId: event.id }
+    });
+    if (alreadyRegistered) throw new Error('Anda sudah terdaftar di event ini.');
 
-    let paymentProofUrl = null
-    let status = 'APPROVED'
-    let token = null
+    let paymentProofUrl = null;
+    let status = 'APPROVED';
+    let token = null;
 
+    // === Jika event berbayar, upload bukti pembayaran ke Cloudinary ===
     if (event.price > 0) {
-        const paymentProofFile = req.files?.paymentProof?.[0]
-        if (!paymentProofFile) throw new Error('Bukti pembayaran wajib diunggah.')
+        const paymentProofFile = req.files?.paymentProof?.[0];
+        if (!paymentProofFile) throw new Error('Bukti pembayaran wajib diunggah.');
 
-        paymentProofUrl = `/uploads/payments/${paymentProofFile.filename}`
-        status = 'PENDING'
+        try {
+            // Upload ke Cloudinary dengan folder terstruktur
+            const uploadResult = await cloudinary.uploader.upload(paymentProofFile.path, {
+                folder: `simkas/payments/${event.id}`,
+                use_filename: true,
+                unique_filename: true,
+                resource_type: "image"
+            });
+
+            paymentProofUrl = uploadResult.secure_url;
+            status = 'PENDING';
+        } catch (err) {
+            console.error("Cloudinary upload failed:", err);
+            throw new Error('Gagal mengunggah bukti pembayaran.');
+        }
     } else {
-        token = generateAlphanumericToken(8)
+        token = generateAlphanumericToken(8);
     }
 
+    // === Simpan data registrasi ke database ===
     const registration = await prisma.registration.create({
         data: {
             userId: user.id,
@@ -48,21 +69,20 @@ exports.registerToEvent = async (eventId, req, user) => {
             status,
             ...(token && { token })
         }
-})
+    });
 
-    return { message: 'Pendaftaran berhasil', registration }
-}
+    return { message: 'Pendaftaran berhasil', registration };
+};
 
-
+// === Ambil semua registrasi per event ===
 exports.getRegistrationsByEvent = async (eventId) => {
     return await prisma.registration.findMany({
         where: { eventId: parseInt(eventId) },
-        include: {
-            user: true
-        }
-    })
-}
+        include: { user: true }
+    });
+};
 
+// === Ekspor data peserta ke CSV ===
 exports.exportRegistrationsCSV = async (eventId) => {
     const registrations = await exports.getRegistrationsByEvent(eventId);
 
@@ -79,50 +99,45 @@ exports.exportRegistrationsCSV = async (eventId) => {
         { label: "Token", value: "token" },
     ];
 
-    // Gunakan delimiter `;` agar Excel Indonesia baca kolom dengan benar
     const parser = new Parser({ fields, delimiter: ";" });
     let csv = parser.parse(registrations);
-
-    // Pastikan line ending Windows
     csv = csv.replace(/\n/g, "\r\n");
-
-    // Tambahkan BOM supaya Excel tahu UTF-8
     return "\uFEFF" + csv;
 };
 
-
+// === Update status pembayaran ===
 exports.updatePaymentStatus = async (registrationId, status) => {
     if (!['PENDING', 'APPROVED', 'REJECTED'].includes(status)) {
-        throw new Error('Invalid status value')
+        throw new Error('Invalid status value');
     }
 
     const registration = await prisma.registration.findUnique({
         where: { id: parseInt(registrationId) },
         include: { event: true }
-    })
+    });
 
-    if (!registration) throw new Error('Registration not found')
+    if (!registration) throw new Error('Registration not found');
 
-    const updateData = { status }
+    const updateData = { status };
 
     if (
         status === 'APPROVED' &&
         registration.event.price > 0 &&
         !registration.token
     ) {
-        updateData.token = generateAlphanumericToken(8)
+        updateData.token = generateAlphanumericToken(8);
     }
 
     return await prisma.registration.update({
         where: { id: parseInt(registrationId) },
         data: updateData
-    })
-}
+    });
+};
 
+// === Cek apakah user sudah terdaftar ===
 exports.checkUserRegistration = async (eventId, userId) => {
     const registration = await prisma.registration.findFirst({
         where: { eventId: parseInt(eventId), userId }
-    })
-    return !!registration
-}
-
+    });
+    return !!registration;
+};

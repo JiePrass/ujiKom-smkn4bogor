@@ -55,7 +55,7 @@ export default function EventCard({ event, isAdmin, onEventUpdated }: EventCardP
                 {/* Background Flyer */}
                 {event.flyerUrl ? (
                     <Image
-                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${event.flyerUrl}`}
+                        src={`${event.flyerUrl}`}
                         alt={event.title}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"

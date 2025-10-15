@@ -28,7 +28,7 @@ export default function CertificatesTable({ certificates }: { certificates: Cert
                         <tr key={c.id} className="border-b">
                             <td className="p-2">
                                 <Image
-                                    src={`${process.env.NEXT_PUBLIC_API_URL}${c.url}`}
+                                    src={`${c.url}`}
                                     alt="sertifikat"
                                     width={120}
                                     height={80}

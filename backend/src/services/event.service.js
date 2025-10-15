@@ -1,21 +1,24 @@
-const path = require('path')
-const fs = require('fs')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const dayjs = require('dayjs')
+const cloudinary = require('cloudinary').v2
 
+// Cloudinary configuration
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+})
+
+/** =======================
+ *  GET ALL EVENTS
+ *  ======================= */
 exports.getAllEvents = async () => {
     const events = await prisma.event.findMany({
-        orderBy: {
-            date: 'asc'
-        },
+        orderBy: { date: 'asc' },
         include: {
-            _count: {
-                select: {
-                    registrations: true
-                }
-            }
-        }
+            _count: { select: { registrations: true } },
+        },
     })
 
     return events.map(event => ({
@@ -32,21 +35,16 @@ exports.getAllEvents = async () => {
     }))
 }
 
+/** =======================
+ *  GET EVENT DETAIL
+ *  ======================= */
 exports.getEventById = async (id) => {
     const event = await prisma.event.findUnique({
         where: { id },
         include: {
-            _count: {
-                select: { registrations: true }
-            },
-            createdByUser: {
-                select: {
-                    id: true,
-                    fullName: true,
-                    email: true
-                }
-            }
-        }
+            _count: { select: { registrations: true } },
+            createdByUser: { select: { id: true, fullName: true, email: true } },
+        },
     })
 
     if (!event) throw new Error('Event tidak ditemukan.')
@@ -64,33 +62,25 @@ exports.getEventById = async (id) => {
         certificateTemplateUrl: event.certificateTemplateUrl,
         price: event.price,
         participantCount: event._count.registrations,
-        createdBy: event.createdByUser
+        createdBy: event.createdByUser,
     }
 }
 
+/** =======================
+ *  CREATE EVENT
+ *  ======================= */
 exports.createEvent = async (req, user) => {
-    const {
-        title,
-        description,
-        date,
-        time,
-        location,
-        eventType,
-        price = 0
-    } = req.body
+    const { title, description, date, time, location, eventType, price = 0 } = req.body;
 
-    const flyerFile = req.files['flyer']?.[0]
-    const flyerUrl = flyerFile ? `/uploads/flyers/${flyerFile.filename}` : null
-
-    const eventBannerFile = req.files['eventBanner']?.[0]
-    const eventBannerUrl = eventBannerFile ? `/uploads/banner-events/${eventBannerFile.filename}` : null
-
-    // Validasi H-3
-    const eventDate = dayjs(date)
-    const today = dayjs()
-    if (eventDate.diff(today, 'day') < 3) {
-        throw new Error('Event hanya bisa dibuat minimal H-3 dari tanggal pelaksanaan.')
+    const eventDate = dayjs(date);
+    const today = dayjs();
+    if (eventDate.diff(today, "day") < 3) {
+        throw new Error("Event hanya bisa dibuat minimal H-3 dari tanggal pelaksanaan.");
     }
+
+    // Cloudinary sudah handle upload lewat multer-storage-cloudinary
+    const flyerUrl = req.files?.flyer?.[0]?.path || null;
+    const eventBannerUrl = req.files?.eventBanner?.[0]?.path || null;
 
     const event = await prisma.event.create({
         data: {
@@ -103,30 +93,23 @@ exports.createEvent = async (req, user) => {
             flyerUrl,
             eventBannerUrl,
             eventType,
-            createdBy: user.id
-        }
-    })
+            createdBy: user.id,
+        },
+    });
 
-    return { message: 'Event berhasil dibuat', event }
-}
+    return { message: "Event berhasil dibuat", event };
+};
 
+/** =======================
+ *  UPDATE EVENT
+ *  ======================= */
 exports.updateEvent = async (req, user) => {
     const { id } = req.params
-    const {
-        title,
-        description,
-        date,
-        time,
-        location,
-        price,
-        eventType
-    } = req.body
+    const { title, description, date, time, location, price, eventType } = req.body
 
-    // Cari event
     const existingEvent = await prisma.event.findUnique({ where: { id: parseInt(id) } })
     if (!existingEvent) throw new Error('Event tidak ditemukan.')
 
-    // Hanya admin yang bisa edit
     if (user.role !== 'ADMIN' && user.id !== existingEvent.createdBy) {
         throw new Error('Tidak memiliki izin untuk mengedit event ini.')
     }
@@ -134,55 +117,41 @@ exports.updateEvent = async (req, user) => {
     const now = dayjs().startOf('day')
     const currentEventDate = dayjs(existingEvent.date).startOf('day')
 
-    // Cek apakah event sedang berlangsung
-    if (currentEventDate.isSame(now)) {
-        throw new Error('Event sedang berlangsung dan tidak dapat diedit.')
-    }
+    if (currentEventDate.isSame(now)) throw new Error('Event sedang berlangsung dan tidak dapat diedit.')
+    if (currentEventDate.isBefore(now)) throw new Error('Event telah selesai dan tidak dapat diedit.')
 
-    // Cek apakah event sudah selesai
-    if (currentEventDate.isBefore(now)) {
-        throw new Error('Event telah selesai dan tidak dapat diedit.')
-    }
-
-    // Validasi H-3
     const newEventDate = date ? dayjs(date) : currentEventDate
     if (newEventDate.diff(now, 'day') < 3) {
         throw new Error('Event hanya bisa diedit minimal H-3 dari tanggal pelaksanaan.')
     }
 
-    // Validasi H-3
-    const eventDate = date ? dayjs(date) : dayjs(existingEvent.date)
-    const today = dayjs()
-    if (eventDate.diff(today, 'day') < 3) {
-        throw new Error('Event hanya bisa diedit minimal H-3 dari tanggal pelaksanaan.')
-    }
-
-    // Handle flyer update
+    // Upload file baru ke Cloudinary (hapus lama jika perlu)
     let flyerUrl = existingEvent.flyerUrl
-    const flyerFile = req.files?.['flyer']?.[0]
-    if (flyerFile) {
-        // Hapus file lama
+    if (req.files?.flyer?.[0]) {
         if (flyerUrl) {
-            const oldPath = path.resolve(process.cwd(), 'uploads', 'flyers', path.basename(flyerUrl))
-            if (fs.existsSync(oldPath)) {
-                fs.unlinkSync(oldPath)
-            }
+            const publicId = extractPublicId(flyerUrl)
+            await cloudinary.uploader.destroy(publicId)
         }
-        flyerUrl = `/uploads/flyers/${flyerFile.filename}`
+        const uploadResult = await cloudinary.uploader.upload(req.files.flyer[0].path, {
+            folder: 'simkas/flyers',
+            resource_type: 'image',
+        })
+        flyerUrl = uploadResult.secure_url
     }
 
-    // Handle event banner update
     let eventBannerUrl = existingEvent.eventBannerUrl
-    const eventBannerFile = req.files?.['eventBanner']?.[0]
-    if (eventBannerFile) {
+    if (req.files?.eventBanner?.[0]) {
         if (eventBannerUrl) {
-            const oldPath = path.resolve(process.cwd(), 'uploads', 'banner-events', path.basename(eventBannerUrl))
-            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath)
+            const publicId = extractPublicId(eventBannerUrl)
+            await cloudinary.uploader.destroy(publicId)
         }
-        eventBannerUrl = `/uploads/event-banners/${eventBannerFile.filename}`
+        const uploadResult = await cloudinary.uploader.upload(req.files.eventBanner[0].path, {
+            folder: 'simkas/banner-events',
+            resource_type: 'image',
+        })
+        eventBannerUrl = uploadResult.secure_url
     }
 
-    // Update event
     const updatedEvent = await prisma.event.update({
         where: { id: parseInt(id) },
         data: {
@@ -194,16 +163,18 @@ exports.updateEvent = async (req, user) => {
             price: price !== undefined ? parseInt(price) : existingEvent.price,
             flyerUrl,
             eventBannerUrl,
-            eventType: eventType ?? existingEvent.eventType
-        }
+            eventType: eventType ?? existingEvent.eventType,
+        },
     })
 
     return { message: 'Event berhasil diperbarui', event: updatedEvent }
 }
 
+/** =======================
+ *  DELETE EVENT
+ *  ======================= */
 exports.deleteEvent = async (id, user) => {
     const eventId = parseInt(id)
-
     const event = await prisma.event.findUnique({ where: { id: eventId } })
     if (!event) throw new Error('Event tidak ditemukan.')
 
@@ -211,44 +182,36 @@ exports.deleteEvent = async (id, user) => {
         throw new Error('Tidak memiliki izin untuk menghapus event ini.')
     }
 
-    // Hapus flyer jika ada
+    // Hapus file dari Cloudinary jika ada
     if (event.flyerUrl) {
-        const flyerPath = path.resolve(process.cwd(), 'uploads', 'flyers', path.basename(event.flyerUrl))
-        if (fs.existsSync(flyerPath)) {
-            fs.unlinkSync(flyerPath)
-        }
+        const publicId = extractPublicId(event.flyerUrl)
+        await cloudinary.uploader.destroy(publicId)
     }
-
-    // Hapus event banner jika ada
     if (event.eventBannerUrl) {
-        const bannerPath = path.resolve(process.cwd(), 'uploads', 'banner-events', path.basename(event.eventBannerUrl))
-        if (fs.existsSync(bannerPath)) fs.unlinkSync(bannerPath)
+        const publicId = extractPublicId(event.eventBannerUrl)
+        await cloudinary.uploader.destroy(publicId)
     }
 
-    // Hapus semua relasi terlebih dahulu
+    // Hapus relasi data
     await prisma.certificate.deleteMany({
-        where: {
-            registration: {
-                eventId
-            }
-        }
+        where: { registration: { eventId } },
     })
-
     await prisma.attendance.deleteMany({
-        where: {
-            registration: {
-                eventId
-            }
-        }
+        where: { registration: { eventId } },
     })
-
     await prisma.registration.deleteMany({
-        where: { eventId }
+        where: { eventId },
     })
 
-    // Terakhir hapus event
     await prisma.event.delete({ where: { id: eventId } })
-
     return { message: 'Event berhasil dihapus' }
 }
 
+/** =======================
+ *  Helper: Extract Cloudinary public_id
+ *  ======================= */
+function extractPublicId(url) {
+    const parts = url.split('/')
+    const folderAndFile = parts.slice(parts.indexOf('upload') + 2).join('/')
+    return folderAndFile.split('.')[0]
+}

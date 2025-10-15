@@ -126,7 +126,7 @@ export default function EditProfileModal({
                                 src={
                                     previewBanner.startsWith("blob:")
                                         ? previewBanner
-                                        : `${process.env.NEXT_PUBLIC_API_URL}${previewBanner}`
+                                        : `${previewBanner}`
                                 }
                                 alt="Banner Preview"
                                 fill
@@ -160,7 +160,7 @@ export default function EditProfileModal({
                                     src={
                                         previewProfile.startsWith("blob:")
                                             ? previewProfile
-                                            : `${process.env.NEXT_PUBLIC_API_URL}${previewProfile}`
+                                            : `${previewProfile}`
                                     }
                                     alt="Profile Preview"
                                     fill

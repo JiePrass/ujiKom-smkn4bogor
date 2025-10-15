@@ -17,7 +17,7 @@ export default function GalleryCard({ gallery, onClick }: Props) {
         >
             {media && (
                 <Image
-                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${media.mediaUrl}`}
+                    src={`${media.mediaUrl}`}
                     alt={gallery.caption || "Gallery image"}
                     width={500}
                     height={500}

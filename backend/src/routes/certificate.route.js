@@ -3,14 +3,14 @@ const router = express.Router()
 const certificateController = require('../controllers/certificate.controller')
 const requireLogin = require('../middlewares/requireLogin')
 const requireRole = require('../middlewares/requireRole')
-const upload = require('../middlewares/upload')
+const uploadLocal = require('../middlewares/uploadLocal')
 
 // Bulk upload sertifikat via ZIP (admin only)
 router.post(
     '/bulk/:eventId',
     requireLogin,
     requireRole('ADMIN'),
-    upload.single('zipFile'),
+    uploadLocal.single('zipFile'),
     certificateController.bulkUploadCertificates
 )
 

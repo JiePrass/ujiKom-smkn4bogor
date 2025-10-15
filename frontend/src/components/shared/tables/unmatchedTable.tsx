@@ -33,6 +33,8 @@ export default function UnmatchedTable({
 
     if (unmatchedFiles.length === 0) return null;
 
+    console.log({ unmatchedFiles });
+
     return (
         <div className="mt-6 space-y-3">
             <h3 className="font-semibold">Unmatched Files</h3>
@@ -50,7 +52,7 @@ export default function UnmatchedTable({
                             <tr key={f.filename} className="border-b">
                                 <td className="p-2">
                                     <Image
-                                        src={`${process.env.NEXT_PUBLIC_API_URL}${f.previewUrl}`}
+                                        src={`${f.previewUrl}`}
                                         alt={f.filename}
                                         width={120}
                                         height={80}

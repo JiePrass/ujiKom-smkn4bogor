@@ -10,15 +10,26 @@ async function uploadGallery(req, res) {
             return res.status(400).json({ error: "No media uploaded" });
         }
 
-        // setiap file = 1 row di Gallery
-        const mediaUrls = req.files.map((file) => `/uploads/gallery/${file.filename}`);
-        const galleries = await galleryService.createGallery(eventId, userId, mediaUrls, caption);
+        // file.path = URL Cloudinary
+        const mediaUrls = req.files.map((file) => file.path);
+
+        const galleries = await galleryService.createGallery(
+            eventId,
+            userId,
+            mediaUrls,
+            caption
+        );
 
         return res.json({ message: "Gallery uploaded successfully", galleries });
     } catch (err) {
-        return res.status(500).json({ error: "Failed to upload gallery", details: err.message });
+        console.error("🔥 Upload gallery error:", err);
+        return res.status(500).json({
+            error: "Failed to upload gallery",
+            details: err.message,
+        });
     }
 }
+
 
 async function getAllGalleries(req, res) {
     try {

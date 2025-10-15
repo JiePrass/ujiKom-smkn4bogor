@@ -190,7 +190,7 @@ export default function GalleryModal({ gallery, currentUser, onClose, onGalleryU
                                     className="absolute inset-0 flex items-center justify-center"
                                 >
                                     <Image
-                                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${media[currentIndex]?.mediaUrl ?? ""}`}
+                                        src={`${media[currentIndex]?.mediaUrl ?? ""}`}
                                         alt={gallery.caption || "Gallery media"}
                                         fill
                                         className="object-contain"
@@ -223,7 +223,7 @@ export default function GalleryModal({ gallery, currentUser, onClose, onGalleryU
                         <div className="flex items-center justify-between p-4 border-b">
                             <div className="flex items-center gap-2">
                                 <Image
-                                    src={gallery.user?.profilePicture ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${gallery.user.profilePicture}` : "/images/default-profile.svg"}
+                                    src={gallery.user?.profilePicture ? `${gallery.user.profilePicture}` : "/images/default-profile.svg"}
                                     alt={gallery.user?.fullName || "User"}
                                     width={40}
                                     height={40}
@@ -241,7 +241,7 @@ export default function GalleryModal({ gallery, currentUser, onClose, onGalleryU
                             {gallery.caption && (
                                 <div className="flex gap-2">
                                     <Image
-                                        src={gallery.user?.profilePicture ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${gallery.user.profilePicture}` : "/images/default-profile.svg"}
+                                        src={gallery.user?.profilePicture ? `${gallery.user.profilePicture}` : "/images/default-profile.svg"}
                                         alt={gallery.user?.fullName || "User"}
                                         width={32}
                                         height={32}
@@ -264,7 +264,7 @@ export default function GalleryModal({ gallery, currentUser, onClose, onGalleryU
                                             <div className="flex gap-2 items-start">
                                                 <Image
                                                     src={comment.user?.profilePicture
-                                                        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${comment.user.profilePicture}`
+                                                        ? `${comment.user.profilePicture}`
                                                         : "/images/default-profile.svg"}
                                                     alt={comment.user?.fullName || "User"}
                                                     width={32}
@@ -306,7 +306,7 @@ export default function GalleryModal({ gallery, currentUser, onClose, onGalleryU
                                                 <div className="flex gap-2 ml-4 pl-2 text-sm items-start border-l border-gray-200" key={reply.id}>
                                                     <Image
                                                         src={reply.user?.profilePicture
-                                                            ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${reply.user.profilePicture}`
+                                                            ? `${reply.user.profilePicture}`
                                                             : "/images/default-profile.svg"}
                                                         alt={reply.user?.fullName || "User"}
                                                         width={32}

@@ -173,7 +173,7 @@ export default function EventsPage() {
                             <Image
                                 src={
                                     heroEvents[currentIndex]?.eventBannerUrl
-                                        ? `${process.env.NEXT_PUBLIC_API_URL}${heroEvents[currentIndex].eventBannerUrl}`
+                                        ? `${heroEvents[currentIndex].eventBannerUrl}`
                                         : "/images/placeholder-banner.png"
                                 }
                                 alt="Banner"
@@ -238,7 +238,7 @@ export default function EventsPage() {
                                 <div className="flex justify-end items-center">
                                     <div className="w-40 md:w-52 lg:w-80">
                                         <Image
-                                            src={`${process.env.NEXT_PUBLIC_API_URL}${heroEvents[currentIndex]?.flyerUrl}`}
+                                            src={`${heroEvents[currentIndex]?.flyerUrl}`}
                                             alt={`${heroEvents[currentIndex]?.title} flyer`}
                                             width={400}
                                             height={600}
