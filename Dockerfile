@@ -1,20 +1,20 @@
-# Gunakan image Node berbasis Debian
+# Gunakan image Node.js resmi
 FROM node:20
 
-# Set working directory
-WORKDIR /app
+# Set working directory ke /app/backend
+WORKDIR /app/backend
 
-# Copy file package.json
-COPY backend/package*.json ./ 
+# Copy file package.json dan lock file
+COPY backend/package*.json ./
 
-# Install dependency sistem untuk canvas
+# Install dependency sistem dan package Node.js
 RUN apt-get update && apt-get install -y python3 make g++ && \
     npm install --legacy-peer-deps
 
-# Copy seluruh kode backend
-COPY backend .
+# Copy seluruh isi folder backend ke dalam container
+COPY backend/ .
 
-# Expose port
+# Expose port aplikasi
 EXPOSE 5000
 
 # Jalankan aplikasi
