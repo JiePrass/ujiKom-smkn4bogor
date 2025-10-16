@@ -8,8 +8,23 @@ const multer = require('multer');
 const app = express()
 const prisma = new PrismaClient()
 
-// Middleware
-app.use(cors())
+
+// ============== Middleware =================
+
+const allowedOrigins = [
+  "http://localhost:3000", 
+  "https://simkas.vercel.app",          
+];
+
+// CORS
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow non-browser tools
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
