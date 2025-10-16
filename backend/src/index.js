@@ -1,106 +1,81 @@
-require('dotenv').config()
-require('./cron/notification.cron')
-const express = require('express')
-const cors = require('cors')
-const { PrismaClient } = require('@prisma/client')
+require('dotenv').config();
+require('./cron/notification.cron');
+const express = require('express');
+const cors = require('cors');
+const { PrismaClient } = require('@prisma/client');
 const multer = require('multer');
 
-const app = express()
-const prisma = new PrismaClient()
+const app = express();
+const prisma = new PrismaClient();
 
-
-// ============== Middleware =================
-
+// ✅ Allowed Origins
 const allowedOrigins = [
-  "http://localhost:3000", 
-  "https://simkas.vercel.app",          
+  "http://localhost:3000",
+  "https://simkas.vercel.app",
 ];
 
-// CORS
-app.use(cors({
+// ✅ CORS Setup
+const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser tools
+    if (!origin) return callback(null, true); // allow tools (Postman)
     if (allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
-}));
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+};
 
-// Cek koneksi DB saat startup
-async function checkDB() {
-  try {
-    await prisma.$connect()
-    console.log('✅ Database connected')
-  } catch (err) {
-    console.error('❌ Database connection failed:', err)
-    process.exit(1)
-  }
-}
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // handle preflight
 
-// Static file serving for uploads
-app.use('/uploads', express.static('uploads'))
+// ✅ Body Parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Default route
+// ✅ Static
+app.use('/uploads', express.static('uploads'));
+
+// ✅ Default route
 app.get('/', (req, res) => {
-  res.json({ message: 'Event Management API is running' })
-})
+  res.json({ message: 'Event Management API is running' });
+});
 
-// AUTH
-const authRoutes = require('./routes/auth.route')
-app.use('/auth', authRoutes)
+// ✅ Routes
+app.use('/auth', require('./routes/auth.route'));
+app.use('/events', require('./routes/event.route'));
+app.use('/registration', require('./routes/registration.route'));
+app.use('/notifications', require('./routes/notification.route'));
+app.use('/dashboard', require('./routes/dashboard.route'));
+app.use('/certificates', require('./routes/certificate.route'));
+app.use('/user', require('./routes/user.route'));
+app.use('/galleries', require('./routes/gallery.route'));
 
-// EVENT
-const eventRoutes = require('./routes/event.route')
-app.use('/events', eventRoutes)
-
-// REGISTRATION
-const registrationRoute = require('./routes/registration.route')
-app.use('/registration', registrationRoute)
-
-// NOTIFICATION
-const notificationRoutes = require('./routes/notification.route')
-app.use('/notifications', notificationRoutes)
-
-// DASHBOARD
-const dashboardRoutes = require('./routes/dashboard.route')
-app.use('/dashboard', dashboardRoutes)
-
-// CERTIFICATE
-const certificateRoutes = require('./routes/certificate.route')
-app.use('/certificates', certificateRoutes)
-
-// USER
-const userRoutes = require('./routes/user.route')
-app.use('/user', userRoutes)
-
-// GALLERY
-const galleryRoutes = require('./routes/gallery.route')
-app.use('/galleries', galleryRoutes)
-
-// Port
-const PORT = process.env.PORT || 3000
-
+// ✅ Error Handler
 app.use((err, req, res, next) => {
   console.error("🔥 Global Error Handler:", err);
 
-  if (err instanceof multer.MulterError) {
+  if (err instanceof multer.MulterError)
     return res.status(400).json({ error: err.message });
-  }
 
-  if (err.name === "Error" && err.http_code) {
-    return res.status(err.http_code).json({ error: err.message });
-  }
-
-  return res
-    .status(500)
-    .json({ error: err.message || "Internal Server Error", details: err });
+  return res.status(500).json({
+    error: err.message || "Internal Server Error",
+    details: err,
+  });
 });
 
-// Start server
+// ✅ DB Check + Start Server
+async function checkDB() {
+  try {
+    await prisma.$connect();
+    console.log('✅ Database connected');
+  } catch (err) {
+    console.error('❌ Database connection failed:', err);
+    process.exit(1);
+  }
+}
+
+const PORT = process.env.PORT || 3000;
 checkDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`)
-  })
-})
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+  });
+});
