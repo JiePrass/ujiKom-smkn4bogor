@@ -1,20 +1,23 @@
-# Gunakan image Node.js resmi yang ringan dan sudah ada npm
+# Gunakan image Node
 FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json dan package-lock.json dari folder backend 
+# Copy file package.json dan lock file
 COPY backend/package*.json ./backend/
 
-# Install dependencies
-RUN cd backend && npm install
+# Install dependencies (pakai legacy peer deps)
+RUN cd backend && npm install --legacy-peer-deps
 
 # Copy semua file backend ke container
 COPY backend ./backend
 
-# Buka port yang digunakan oleh backend (opsional, tergantung port kamu)
-EXPOSE 3000
+# Set workdir ke backend
+WORKDIR /app/backend
 
-# Jalankan backend
-CMD ["node", "backend/src/index.js"]
+# Expose port (ubah sesuai port app kamu)
+EXPOSE 5000
+
+# Jalankan server
+CMD ["node", "src/index.js"]
