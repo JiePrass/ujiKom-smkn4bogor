@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
       {
         protocol: "http",
         hostname: "localhost",
-        port: "2304", // sesuaikan port backend kamu
+        port: "2304",
         pathname: "/uploads/**",
       },
       {

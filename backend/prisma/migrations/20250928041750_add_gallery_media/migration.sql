@@ -5,7 +5,7 @@
 
 */
 -- AlterTable
-ALTER TABLE `gallery` DROP COLUMN `mediaUrl`;
+ALTER TABLE `Gallery` DROP COLUMN `mediaUrl`;
 
 -- CreateTable
 CREATE TABLE `GalleryMedia` (

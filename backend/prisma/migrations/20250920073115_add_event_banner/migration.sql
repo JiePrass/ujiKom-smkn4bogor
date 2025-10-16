@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `event` ADD COLUMN `eventBannerUrl` VARCHAR(191) NULL;
+ALTER TABLE `Event` ADD COLUMN `eventBannerUrl` VARCHAR(191) NULL;

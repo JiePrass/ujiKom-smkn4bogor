@@ -141,7 +141,7 @@ export default function EventCard({ event, isAdmin, onEventUpdated }: EventCardP
             {/* Modal Fullscreen */}
             <ImageFullscreenModal
                 isOpen={isFullscreen}
-                imageUrl={`${process.env.NEXT_PUBLIC_API_URL}${event.flyerUrl}`}
+                imageUrl={`${event.flyerUrl}`}
                 alt={event.title}
                 onClose={() => setIsFullscreen(false)}
             />

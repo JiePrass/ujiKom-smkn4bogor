@@ -5,10 +5,10 @@
 
 */
 -- AlterTable
-ALTER TABLE `event` DROP COLUMN `certificateTemplateUrl`;
+ALTER TABLE `Event` DROP COLUMN `certificateTemplateUrl`;
 
 -- AlterTable
-ALTER TABLE `registration` MODIFY `token` VARCHAR(191) NULL;
+ALTER TABLE `Registration` MODIFY `token` VARCHAR(191) NULL;
 
 -- CreateTable
 CREATE TABLE `Notification` (

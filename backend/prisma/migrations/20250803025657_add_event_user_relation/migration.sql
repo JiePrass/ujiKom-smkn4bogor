@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `event` MODIFY `flyerUrl` VARCHAR(191) NULL,
+ALTER TABLE `Event` MODIFY `flyerUrl` VARCHAR(191) NULL,
     MODIFY `certificateTemplateUrl` VARCHAR(191) NULL;
 
 -- AddForeignKey

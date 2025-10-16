@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `user` ADD COLUMN `bannerUrl` VARCHAR(191) NULL;
+ALTER TABLE `User` ADD COLUMN `bannerUrl` VARCHAR(191) NULL;
