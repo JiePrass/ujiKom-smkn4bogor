@@ -1,23 +1,24 @@
-# Gunakan image Node
-FROM node:20-alpine
+# Gunakan image Node berbasis Debian (bukan Alpine)
+FROM node:20
 
 # Set working directory
 WORKDIR /app
 
-# Copy file package.json dan lock file
+# Copy file package.json dan package-lock.json dari backend
 COPY backend/package*.json ./backend/
 
-# Install dependencies (pakai legacy peer deps)
-RUN cd backend && npm install --legacy-peer-deps
+# Install dependency sistem yang diperlukan canvas (Python + build tools)
+RUN apt-get update && apt-get install -y python3 make g++ && \
+    cd backend && npm install --legacy-peer-deps
 
-# Copy semua file backend ke container
+# Copy seluruh backend ke dalam container
 COPY backend ./backend
 
 # Set workdir ke backend
 WORKDIR /app/backend
 
-# Expose port (ubah sesuai port app kamu)
+# Expose port (ubah sesuai port aplikasi kamu)
 EXPOSE 5000
 
-# Jalankan server
+# Jalankan aplikasi
 CMD ["node", "src/index.js"]
