@@ -1,33 +1,11 @@
-"use client"
+// /app/auth/google/callback/page.tsx
+import { Suspense } from "react"
+import GoogleCallback from "./GoogleCallback"
 
-import { useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { loginWithGoogle } from "@/lib/api/auth"
-
-export default function GoogleCallback() {
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const code = searchParams.get("code")
-
-    useEffect(() => {
-        const handleGoogleLogin = async () => {
-            if (!code) return
-
-            try {
-                const { token, user } = await loginWithGoogle(code)
-
-                localStorage.setItem("token", token)
-                localStorage.setItem("user", JSON.stringify(user))
-
-                router.push("/")
-            } catch (error) {
-                console.error("Google login failed:", error)
-                router.push("/login?error=google_failed")
-            }
-        }
-
-        handleGoogleLogin()
-    }, [code, router])
-
-    return <p>Loading...</p>
+export default function Page() {
+    return (
+        <Suspense fallback={<p>Loading...</p>}>
+            <GoogleCallback />
+        </Suspense>
+    )
 }
