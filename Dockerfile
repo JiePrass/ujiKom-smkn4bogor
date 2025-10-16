@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y python3 make g++ && \
 # Copy seluruh isi folder backend ke dalam container
 COPY backend/ .
 
+# Jalankan prisma generate agar @prisma/client siap
+RUN npx prisma generate
+
 # Expose port aplikasi
 EXPOSE 5000
 
