@@ -1,7 +1,6 @@
 [build]
 root = "backend"
-builder = "Bun"
-install = "bun install"
+buildCommand = "bun install"
 
 [deploy]
-start = "bun src/index.js"
+startCommand = "bun src/index.js"
