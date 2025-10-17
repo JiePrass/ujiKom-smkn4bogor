@@ -8,16 +8,14 @@ const multer = require('multer');
 const app = express();
 const prisma = new PrismaClient();
 
-// ✅ Allowed Origins
 const allowedOrigins = [
   "http://localhost:3000",
   "https://simkas.vercel.app",
 ];
 
-// ✅ CORS Setup
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow tools (Postman)
+    if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error("Not allowed by CORS"));
   },
@@ -25,7 +23,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // handle preflight
 
 // ✅ Body Parser
 app.use(express.json());
