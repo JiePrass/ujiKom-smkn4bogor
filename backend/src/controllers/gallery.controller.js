@@ -1,6 +1,7 @@
 const galleryService = require("../services/gallery.service");
 
-async function uploadGallery(req, res) {
+// === UPLOAD GALLERY ===
+exports.uploadGallery = async (req, res) => {
     try {
         const eventId = Number(req.body.eventId);
         const { caption } = req.body;
@@ -10,7 +11,6 @@ async function uploadGallery(req, res) {
             return res.status(400).json({ error: "No media uploaded" });
         }
 
-        // file.path = URL Cloudinary
         const mediaUrls = req.files.map((file) => file.path);
 
         const galleries = await galleryService.createGallery(
@@ -20,7 +20,10 @@ async function uploadGallery(req, res) {
             caption
         );
 
-        return res.json({ message: "Gallery uploaded successfully", galleries });
+        return res.json({
+            message: "Gallery uploaded successfully",
+            galleries,
+        });
     } catch (err) {
         console.error("🔥 Upload gallery error:", err);
         return res.status(500).json({
@@ -28,10 +31,10 @@ async function uploadGallery(req, res) {
             details: err.message,
         });
     }
-}
+};
 
-
-async function getAllGalleries(req, res) {
+// === GET ALL GALLERIES ===
+exports.getAllGalleries = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
@@ -41,87 +44,154 @@ async function getAllGalleries(req, res) {
         console.error(err);
         return res.status(500).json({ error: "Failed to fetch galleries" });
     }
-}
+};
 
-
-async function getGalleryDetail(req, res) {
+// === GET GALLERY DETAIL ===
+exports.getGalleryDetail = async (req, res) => {
     try {
         const { id } = req.params;
         const gallery = await galleryService.getGalleryById(Number(id));
-        if (!gallery) return res.status(404).json({ error: "Gallery not found" });
+        if (!gallery) {
+            return res.status(404).json({ error: "Gallery not found" });
+        }
         return res.json(gallery);
     } catch (err) {
         return res.status(500).json({ error: "Failed to fetch gallery detail" });
     }
-}
+};
 
-async function deleteGallery(req, res) {
+// === DELETE GALLERY (Admin only) ===
+exports.deleteGallery = async (req, res) => {
     try {
         const { galleryId } = req.params;
         const userRole = req.user.role;
 
-        const result = await galleryService.deleteGallery(Number(galleryId), userRole);
-        res.json({ message: "Gallery deleted successfully", result });
+        const result = await galleryService.deleteGallery(
+            Number(galleryId),
+            userRole
+        );
+        return res.json({
+            message: "Gallery deleted successfully",
+            result,
+        });
     } catch (err) {
-        res.status(403).json({ error: err.message });
+        return res.status(403).json({ error: err.message });
     }
-}
+};
 
-async function likeGallery(req, res) {
+// === LIKE / UNLIKE GALLERY ===
+exports.likeGallery = async (req, res) => {
     try {
         const { galleryId } = req.params;
         const userId = req.user.id;
         const result = await galleryService.toggleLike(Number(galleryId), userId);
         return res.json(result);
     } catch (err) {
+        console.error(err);
         return res.status(500).json({ error: "Failed to toggle like" });
     }
-}
+};
 
-async function addComment(req, res) {
+// === ADD COMMENT ===
+exports.addComment = async (req, res) => {
     try {
         const { galleryId } = req.params;
         const { content, parentId } = req.body;
         const userId = req.user.id;
-        const comment = await galleryService.addComment(Number(galleryId), userId, content, parentId);
+
+        const comment = await galleryService.addComment(
+            Number(galleryId),
+            userId,
+            content,
+            parentId
+        );
+
         return res.json(comment);
     } catch (err) {
+        console.error(err);
         return res.status(500).json({ error: "Failed to add comment" });
     }
-}
+};
 
-async function reportComment(req, res) {
+// === REPORT COMMENT ===
+exports.reportComment = async (req, res) => {
     try {
         const { commentId } = req.params;
         const { reason } = req.body;
         const userId = req.user.id;
-        const report = await galleryService.reportComment(Number(commentId), userId, reason);
-        return res.json({ message: "Report submitted", report });
-    } catch (err) {
-        return res.status(500).json({ error: "Failed to report comment" });
-    }
-}
 
-async function deleteComment(req, res) {
+        const report = await galleryService.reportComment(
+            Number(commentId),
+            userId,
+            reason
+        );
+
+        return res.json({
+            message: "Report submitted successfully",
+            report,
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: err.message || "Failed to report comment" });
+    }
+};
+
+
+// === GET ALL REPORTED COMMENTS (Admin only) ===
+exports.getAllReportedComments = async (req, res) => {
+    try {
+        const reports = await galleryService.getAllReportedComments();
+        return res.status(200).json({
+            message: "Data report comment gallery berhasil diambil.",
+            data: reports,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            error: "Terjadi kesalahan saat mengambil data report comment.",
+        });
+    }
+};
+
+// === REJECT REPORT (Admin only) ===
+exports.rejectReport = async (req, res) => {
+    try {
+        const { reportId } = req.params;
+        const result = await galleryService.rejectReport(Number(reportId));
+
+        if (!result) {
+            return res.status(404).json({ error: "Report tidak ditemukan." });
+        }
+
+        res.status(200).json({
+            message: "Report berhasil dihapus (ditolak).",
+            data: result,
+        });
+    } catch (error) {
+        console.error("🔥 Error reject report:", error);
+        res.status(500).json({ error: "Terjadi kesalahan saat menolak report." });
+    }
+};
+
+// === DELETE COMMENT (Admin or Owner only) ===
+exports.deleteComment = async (req, res) => {
     try {
         const { commentId } = req.params;
         const userId = req.user.id;
         const userRole = req.user.role;
 
-        const result = await galleryService.deleteComment(Number(commentId), userId, userRole);
-        res.json({ message: "Comment deleted successfully", result });
-    } catch (err) {
-        res.status(403).json({ error: err.message });
-    }
-}
+        const result = await galleryService.deleteComment(
+            Number(commentId),
+            userId,
+            userRole
+        );
 
-module.exports = {
-    uploadGallery,
-    getAllGalleries,
-    getGalleryDetail,
-    deleteGallery,
-    likeGallery,
-    addComment,
-    reportComment,
-    deleteComment
+        return res.json({
+            message: "Comment deleted successfully",
+            result,
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(403).json({ error: err.message });
+    }
 };

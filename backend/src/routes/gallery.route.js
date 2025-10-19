@@ -19,5 +19,7 @@ router.post("/:galleryId/like", requireLogin, galleryController.likeGallery);
 router.post("/:galleryId/comments", requireLogin, galleryController.addComment);
 router.post("/comments/:commentId/report", requireLogin, galleryController.reportComment);
 router.delete("/comments/:commentId", requireLogin, galleryController.deleteComment);
+router.get("/comments/reports", requireLogin, requireRole("ADMIN"), galleryController.getAllReportedComments);
+router.delete("/comments/reports/:reportId/reject", requireLogin, requireRole("ADMIN"), galleryController.rejectReport);
 
 module.exports = router;

@@ -88,6 +88,24 @@ export async function reportGalleryComment(
 }
 
 /**
+ * === GET ALL REPORTED COMMENTS (Admin only) ===
+ */
+export async function getAllReportedGalleryComments() {
+    const res = await axiosInstance.get(`/galleries/comments/reports`);
+    return res.data;
+}
+
+/**
+ * === REJECT COMMENT REPORT (Admin only) ===
+ */
+export async function rejectGalleryCommentReport(
+    reportId: number
+): Promise<{ message: string }> {
+    const res = await axiosInstance.delete(`/galleries/comments/reports/${reportId}/reject`);
+    return res.data;
+}
+
+/**
  * === DELETE COMMENT (Admin or Owner) ===
  */
 export async function deleteGalleryComment(
