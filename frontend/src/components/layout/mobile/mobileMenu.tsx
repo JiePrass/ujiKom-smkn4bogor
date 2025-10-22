@@ -4,13 +4,16 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import { Home, Info, Calendar, FileText, Bell, ChevronRight, X } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
 import SearchBar from "../../shared/searchBar";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { User } from "@/types/model";
+import { getAllEvents } from "@/lib/api/event";
+import { Event } from "@/types/model";
+import { slugify } from "@/lib/utils/slugify";
 
 interface MobileMenuProps {
-    navLinks: { key: string; href: string }[];
+    navLinks: { key: string; href: string; label: string }[];
     onClose: () => void;
     userData: User | null;
     isLoggedIn: boolean;
@@ -22,6 +25,57 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
     const pathname = usePathname();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [token, setToken] = useState<string | null>(null);
+
+
+    // 🔹 State untuk search
+    const [searchQuery, setSearchQuery] = useState("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    // 🔹 Handler pencarian event
+    const handleSearchChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+
+        if (!value.trim()) {
+            setSearchResults([]);
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            const res = await getAllEvents();
+            const filtered = res.filter((event: Event) =>
+                event.title.toLowerCase().includes(value.toLowerCase())
+            );
+            setSearchResults(filtered || []);
+        } catch (error) {
+            console.error("Gagal mencari event:", error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (searchQuery.trim()) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                handleSearchChange({ target: { value: searchQuery } } as any);
+            }
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [searchQuery]);
+
+
+    // 🔹 Navigasi ke detail event berdasarkan slug
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleSelectEvent = (event: any) => {
+        setSearchQuery("");
+        setSearchResults([]);
+        const slug = slugify(event.title);
+        router.push(`/event/${slug}-${event.id}`);
+    };
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -36,13 +90,6 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
             localStorage.removeItem("token");
         }
         router.push("/login");
-    };
-
-    const icons: Record<string, React.ElementType> = {
-        Beranda: Home,
-        Tentang: Info,
-        Event: Calendar,
-        Artikel: FileText,
     };
 
     return (
@@ -82,8 +129,8 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                     <Image
                         src={
                             userData.profilePicture
-                                ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${userData.profilePicture}`
-                                : "/images/default-profile.png"
+                                ? `${userData.profilePicture}`
+                                : "/images/default-profile.svg"
                         }
                         alt="User"
                         width={48}
@@ -99,7 +146,41 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
 
             {/* Search */}
             <div className="px-6 mb-6">
-                <SearchBar value="" onChange={() => (console.log("TES"))} />
+                <div className="relative">
+                    <SearchBar
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Cari event..."
+                        className="bg-white rounded-full"
+                    />
+
+                    {/* 🔹 Dropdown hasil pencarian */}
+                    {searchQuery && searchResults.length > 0 && (
+                        <div className="absolute mt-2 w-full bg-white shadow-lg rounded-lg z-50 max-h-60 overflow-auto">
+                            {searchResults.map((event) => (
+                                <button
+                                    key={event.id}
+                                    onClick={() => handleSelectEvent(event)}
+                                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                                >
+                                    {event.title}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {isSearching && (
+                        <div className="absolute mt-2 w-full bg-white rounded-lg shadow-lg p-3 text-gray-500 text-sm">
+                            Mencari...
+                        </div>
+                    )}
+
+                    {searchQuery && !isSearching && searchResults.length === 0 && (
+                        <div className="absolute mt-2 w-full bg-white rounded-lg shadow-lg p-3 text-gray-500 text-sm">
+                            Tidak ada event ditemukan.
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Navigation */}
@@ -124,19 +205,17 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                     })()}
 
                     {navLinks.map((item) => {
-                        const Icon = icons[item.key];
                         return (
                             <Link
                                 key={item.key}
                                 href={item.href}
                                 onClick={onClose}
                                 className={`font-medium flex items-center gap-2 px-4 rounded-lg py-2 transition-colors ${getIsActive(item.href)
-                                        ? "text-blue-600 bg-gray-100"
-                                        : "text-gray-700 hover:text-blue-600 hover:bg-gray-100"
+                                    ? "text-blue-600 bg-gray-100"
+                                    : "text-gray-700 hover:text-blue-600 hover:bg-gray-100"
                                     }`}
                             >
-                                {Icon && <Icon className="w-5 h-5 text-gray-500" />}
-                                <span>{item.key}</span>
+                                <span>{item.label}</span>
                             </Link>
                         );
                     })}
@@ -147,7 +226,6 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                             className="font-medium w-full text-gray-700 flex justify-between px-4 rounded-lg py-2 transition-colors hover:text-blue-600 hover:bg-gray-100"
                         >
                             <div className="flex items-center gap-2">
-                                <Bell className="w-5 h-5 text-gray-500" />
                                 <span>Notifikasi</span>
                             </div>
                             <ChevronRight />

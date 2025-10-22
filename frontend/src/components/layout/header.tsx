@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { ChangeEvent, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Menu } from "lucide-react";
 import Image from "next/image";
@@ -21,7 +21,9 @@ import {
     markAllNotificationsAsRead,
     deleteNotification,
 } from "@/lib/api/notification";
-import { Notification } from "@/types/model";
+import { getAllEvents } from "@/lib/api/event";
+import { Event, Notification } from "@/types/model";
+import { slugify } from "@/lib/utils/slugify";
 
 const navLinks = [
     { key: "beranda", label: "Beranda", href: "/" },
@@ -43,6 +45,56 @@ export default function Header() {
     const inView = useInView(ref, { once: true, amount: 0.2 });
 
     const { user, isLoggedIn } = useAuth();
+
+    // 🔹 State untuk search
+    const [searchQuery, setSearchQuery] = useState("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    // 🔹 Handler pencarian event
+    const handleSearchChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+
+        if (!value.trim()) {
+            setSearchResults([]);
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            const res = await getAllEvents();
+            const filtered = res.filter((event: Event) =>
+                event.title.toLowerCase().includes(value.toLowerCase())
+            );
+            setSearchResults(filtered || []);
+        } catch (error) {
+            console.error("Gagal mencari event:", error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (searchQuery.trim()) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                handleSearchChange({ target: { value: searchQuery } } as any);
+            }
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [searchQuery]);
+
+
+    // 🔹 Navigasi ke detail event berdasarkan slug
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleSelectEvent = (event: any) => {
+        setSearchQuery("");
+        setSearchResults([]);
+        const slug = slugify(event.title);
+        router.push(`/event/${slug}-${event.id}`);
+    };
 
     // 🔹 State untuk notifikasi
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -170,7 +222,42 @@ export default function Header() {
 
                     {/* Menu kanan */}
                     <div className="ml-auto hidden md:flex items-center gap-4">
-                        <SearchBar value="" onChange={() => console.log("NOT IMPLEMENT")} className="bg-white rounded-full" />
+                        <div className="relative">
+                            <SearchBar
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Cari event..."
+                                className="bg-white rounded-full"
+                            />
+
+                            {/* 🔹 Dropdown hasil pencarian */}
+                            {searchQuery && searchResults.length > 0 && (
+                                <div className="absolute mt-2 w-full bg-white shadow-lg rounded-lg z-50 max-h-60 overflow-auto">
+                                    {searchResults.map((event) => (
+                                        <button
+                                            key={event.id}
+                                            onClick={() => handleSelectEvent(event)}
+                                            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                                        >
+                                            {event.title}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {isSearching && (
+                                <div className="absolute mt-2 w-full bg-white rounded-lg shadow-lg p-3 text-gray-500 text-sm">
+                                    Mencari...
+                                </div>
+                            )}
+
+                            {searchQuery && !isSearching && searchResults.length === 0 && (
+                                <div className="absolute mt-2 w-full bg-white rounded-lg shadow-lg p-3 text-gray-500 text-sm">
+                                    Tidak ada event ditemukan.
+                                </div>
+                            )}
+                        </div>
+
                         {isLoggedIn && user ? (
                             <>
                                 <ProfileDropdown userData={user} />
@@ -195,8 +282,8 @@ export default function Header() {
                                     asChild
                                     variant="outline"
                                     className={`rounded-full hover:text-white ${isTop
-                                            ? "border-white text-white hover:backdrop-blur-md hover:bg-white/10"
-                                            : "border-primary text-primary hover:bg-primary"
+                                        ? "border-white text-white hover:backdrop-blur-md hover:bg-white/10"
+                                        : "border-primary text-primary hover:bg-primary"
                                         }`}
                                 >
                                     <Link href="/register">Register</Link>
@@ -208,7 +295,7 @@ export default function Header() {
                     {/* Tombol menu mobile */}
                     <div className="md:hidden flex space-x-4 items-center ml-auto">
                         <button onClick={toggleMenu}>
-                            <Menu className="w-6 h-6" />
+                            <Menu className={`w-6 h-6 ${isTop ? "text-white" : "text-black"} `} />
                         </button>
                     </div>
                 </motion.div>
