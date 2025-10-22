@@ -8,10 +8,9 @@ const multer = require('multer');
 const app = express();
 const prisma = new PrismaClient();
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://simkas.vercel.app",
-];
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : [];
 
 const corsOptions = {
   origin: function (origin, callback) {
