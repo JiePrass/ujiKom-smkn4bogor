@@ -17,6 +17,7 @@ import { Loader2 } from "lucide-react";
 import CertificatesTable from "@/components/shared/tables/certificateTable";
 import UnmatchedTable from "@/components/shared/tables/unmatchedTable";
 import { EventSelector } from "@/components/shared/eventSelector";
+import LoadingScreen from "@/components/layout/loadingScreen";
 
 // 🔹 Types
 interface Event {
@@ -131,6 +132,10 @@ export default function AdminCertificatesPage() {
         } catch {
             setMessage({ type: "error", text: "Gagal menyimpan mapping." });
         }
+    }
+
+    if (loading) {
+        return <LoadingScreen show={loading} text="Memuat data Sertifikat..." />
     }
 
     return (

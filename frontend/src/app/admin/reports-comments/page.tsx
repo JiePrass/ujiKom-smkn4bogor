@@ -1,8 +1,12 @@
-'use client';
+"use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { getAllReportedGalleryComments, deleteGalleryComment, rejectGalleryCommentReport } from "@/lib/api/gallery";
-import { ArrowUpDown, Funnel, Loader2 } from "lucide-react";
+import {
+    getAllReportedGalleryComments,
+    deleteGalleryComment,
+    rejectGalleryCommentReport,
+} from "@/lib/api/gallery";
+import { ArrowUpDown, Funnel, Inbox } from "lucide-react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import ReportsCommentTable from "@/components/shared/tables/reportCommentTable";
@@ -16,6 +20,8 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
+import LoadingScreen from "@/components/layout/loadingScreen";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MySwal = withReactContent(Swal);
 
@@ -130,7 +136,10 @@ export default function ReportsComments() {
     );
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 relative min-h-[400px]">
+            {/* Loading Overlay */}
+            <LoadingScreen show={loading} text="Memuat laporan komentar..." />
+
             {/* Header */}
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-semibold">Laporan Komentar</h2>
@@ -181,21 +190,39 @@ export default function ReportsComments() {
                 </div>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center py-10">
-                    <Loader2 className="animate-spin h-6 w-6 text-gray-500" />
-                </div>
-            ) : filteredAndSortedReports.length === 0 ? (
-                <p className="text-center text-gray-500 py-6">
-                    Tidak ada report komentar.
-                </p>
-            ) : (
-                <ReportsCommentTable
-                    reports={paginatedData}
-                    onDelete={handleDeleteComment}
-                    onReject={handleRejectReport}
-                />
-            )}
+            {/* Content */}
+            <AnimatePresence mode="wait">
+                {!loading && (
+                    <>
+                        {filteredAndSortedReports.length === 0 ? (
+                            <motion.div
+                                key="empty"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.3 }}
+                                className="flex flex-col items-center justify-center py-16 text-center"
+                            >
+                                <div className="flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 mb-5">
+                                    <Inbox className="w-10 h-10 text-gray-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                                    Tidak ada laporan komentar
+                                </h3>
+                                <p className="text-sm text-gray-500 mt-1 max-w-sm">
+                                    Semua komentar saat ini aman dan tidak dilaporkan oleh pengguna.
+                                </p>
+                            </motion.div>
+                        ) : (
+                            <ReportsCommentTable
+                                reports={paginatedData}
+                                onDelete={handleDeleteComment}
+                                onReject={handleRejectReport}
+                            />
+                        )}
+                    </>
+                )}
+            </AnimatePresence>
 
             {/* Pagination */}
             {totalPages > 1 && (

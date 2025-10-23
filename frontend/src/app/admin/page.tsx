@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import SummaryCard from "@/components/shared/cards/sumCard";
 import SmallEventCard from "@/components/shared/cards/smallEventCard";
+import LoadingScreen from "@/components/layout/loadingScreen";
 
 export default function AdminDashboardPage() {
     const [summary, setSummary] = useState<any>(null);
@@ -114,7 +115,7 @@ export default function AdminDashboardPage() {
     } satisfies ChartConfig;
 
     if (loading) {
-        return <p className="text-muted-foreground">Memuat data dashboard...</p>;
+        return <LoadingScreen show={loading} text="Memuat data Dashboard..." />
     }
 
     return (

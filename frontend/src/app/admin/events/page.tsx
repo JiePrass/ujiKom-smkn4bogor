@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { getAllEvents } from "@/lib/api/event";
 import { Event } from "@/types/model";
 import EventCard from "@/components/shared/cards/eventCard";
+import LoadingScreen from "@/components/layout/loadingScreen";
 
 export default function EventManagement() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -25,7 +26,9 @@ export default function EventManagement() {
         fetchEvents();
     }, []);
 
-    if (loading) return <p className="text-center py-6">Loading...</p>;
+    if (loading) {
+        return <LoadingScreen show={loading} text="Memuat data dashboard..." />
+    }
 
     if (events.length === 0) return <p className="text-center py-6">Tidak ada event.</p>;
 

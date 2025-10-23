@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { Trash2 } from "lucide-react";
+import { Camera, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import GalleryCard from "@/components/shared/cards/galleryCard";
@@ -10,6 +10,7 @@ import GalleryModal from "@/components/shared/modals/galleryModal";
 import { getAllGalleries, getGalleryDetail, deleteGallery } from "@/lib/api/gallery";
 import { Gallery } from "@/types/model";
 import { useAuth } from "@/context/authContext";
+import LoadingScreen from "@/components/layout/loadingScreen";
 
 export default function AdminGalleryPage() {
     const { user, isLoggedIn } = useAuth();
@@ -83,6 +84,10 @@ export default function AdminGalleryPage() {
         }
     };
 
+    if (loading) {
+        return <LoadingScreen show={loading} text="Memuat data Galeri..." />
+    }
+
     return (
         <section className="w-full">
             {/* ===== Header ===== */}
@@ -92,11 +97,25 @@ export default function AdminGalleryPage() {
             {loading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1">
                     {Array.from({ length: limit }).map((_, i) => (
-                        <Skeleton key={i} className="w-full aspect-square" />   
+                        <Skeleton key={i} className="w-full aspect-square" />
                     ))}
                 </div>
             ) : galleries.length === 0 ? (
-                <p className="text-center text-gray-500">Belum ada galeri tersedia.</p>
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="relative mb-4">
+                        <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full w-20 h-20" />
+                        <div className="relative flex items-center justify-center w-20 h-20 bg-primary/15 rounded-full">
+                            <Camera className="w-10 h-10 text-primary animate-pulse" />
+                        </div>
+                    </div>
+
+                    <h2 className="text-lg font-semibold text-gray-700 mb-1">
+                        Belum Ada Galeri
+                    </h2>
+                    <p className="text-sm text-gray-500 max-w-sm">
+                        Tidak ada galeri yang tersedia saat ini. Tambahkan galeri baru untuk mulai menampilkan karya Anda.
+                    </p>
+                </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1">
                     {galleries.map((gallery) => (
