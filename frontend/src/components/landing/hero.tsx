@@ -43,7 +43,7 @@ export function HeroSection() {
             </div>
 
             {/* Card Section */}
-            <div className="relative z-20 max-w-5xl bg-white mx-auto px-4 pt-4 rounded-t-2xl">
+            <div className="relative z-20 max-w-5xl bg-white mx-auto px-6 pt-6 rounded-t-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Left Cards */}
                     <div className="flex flex-col gap-4">

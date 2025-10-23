@@ -27,9 +27,9 @@ export default function EventSection() {
 
     return (
         <section className="container mx-auto px-6" aria-label="Event Terbaru">
-            <div className="flex justify-between items-center">
-                <h2 className="text-5xl font-bold mb-6">Ikuti Berbagai Event Menarik</h2>
-                <Link href="/events" className="text-lg pr-4 underline font-medium">Lihat Semua</Link>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl lg:text-5xl font-bold">Ikuti Berbagai Event Menarik</h2>
+                <Link href="/events" className="text-lg pr-4 underline font-medium hidden">Lihat Semua</Link>
             </div>
 
             <div className="grid md:grid-cols-4 gap-8 mt-8">

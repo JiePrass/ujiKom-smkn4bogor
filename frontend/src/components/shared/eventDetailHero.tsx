@@ -82,35 +82,35 @@ export default function EventDetailHero({
                     </div>
 
                     {/* Info */}
-                    <div className="md:col-span-2 text-white flex flex-col justify-between">
-                        <h1 className="text-2xl md:text-5xl font-extrabold leading-tight">
+                    <div className="md:col-span-2 md:text-white px-6 flex flex-col justify-between">
+                        <h1 className="text-3xl md:text-5xl font-extrabold leading-tight">
                             {event.title}
                         </h1>
-                        <p className="mt-2 text-sm md:text-base text-gray-200">
+                        <p className="mt-2 text-sm md:text-base md:text-gray-200">
                             Diselenggarakan oleh{" "}
-                            <span className="font-semibold text-white">
+                            <span className="font-semibold md:text-white">
                                 {event.createdBy.fullName}
                             </span>
                         </p>
 
-                        <div className="mt-8 flex gap-12 text-sm md:text-sm text-gray-200">
+                        <div className="mt-8 flex gap-12 text-sm md:text-sm md:text-gray-200">
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-center gap-2">
-                                    <CalendarDaysIcon className="w-5 h-5 text-white" />
+                                    <CalendarDaysIcon className="w-5 h-5 md:text-white" />
                                     <span>{formatEventDate(event.date)}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <MapPinIcon className="w-5 h-5 text-white" />
+                                    <MapPinIcon className="w-5 h-5 md:text-white" />
                                     <span>{event.location}</span>
                                 </div>
                             </div>
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-center gap-2">
-                                    <ClockIcon className="w-5 h-5 text-white" />
+                                    <ClockIcon className="w-5 h-5 md:text-white" />
                                     <span>{event.time}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <CurrencyDollarIcon className="w-5 h-5 text-white" />
+                                    <CurrencyDollarIcon className="w-5 h-5 md:text-white" />
                                     <span>
                                         {event.price > 0
                                             ? `Rp ${event.price.toLocaleString("id-ID")}`

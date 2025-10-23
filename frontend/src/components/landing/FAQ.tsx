@@ -64,7 +64,7 @@ export default function FAQSection() {
     }
 
     return (
-        <section aria-label="Pertanyaan yang Sering Diajukan" className="container mx-auto px-6">
+        <section aria-label="Pertanyaan yang Sering Diajukan" className="container mx-auto px-6 flex justify-center">
             {/* Structured Data JSON-LD */}
             <Script
                 id="faq-jsonld"
@@ -72,12 +72,12 @@ export default function FAQSection() {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
             />
 
-            <div className="container mx-auto px-6 md:px-0  max-w-3xl">
+            <div className="md:max-w-3xl">
                 <div className="flex flex-col text-center mb-12 space-y-4">
                     <h2 className="text-3xl md:text-5xl font-bold">
                         Berbagai Pertanyaan yang sering ditanyakan seputar kami
                     </h2>
-                    <p className="font-light px-48">Cari dan temukan jawabanmu dari berbagai pertanyaan seputar SIMKAS disini!</p>
+                    <p className="font-light md:px-48">Cari dan temukan jawabanmu dari berbagai pertanyaan seputar SIMKAS disini!</p>
                 </div>
 
                 <div className="space-y-4 mx-auto">

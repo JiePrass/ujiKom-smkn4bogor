@@ -168,8 +168,8 @@ export default function EventDetailPage() {
             />
 
             <section className="container mx-auto pt-20 py-10 grid grid-cols-1 md:grid-cols-3 gap-8 px-6 md:px-0">
-                <div className="flex flex-col gap-4">
-                    <h2 className="text-2xl font-semibold px-6">Rekomendasi Event</h2>
+                <div className="flex flex-col gap-4 order-2 md:order-1">
+                    <h2 className="text-2xl font-semibold">Rekomendasi Event</h2>
                     <div className="flex flex-col gap-6">
                         {loadingRecom ? (
                             Array.from({ length: 4 }).map((_, i) => <SmallEventCardSkeleton key={i} />)
@@ -183,7 +183,7 @@ export default function EventDetailPage() {
 
                 {/* Event Details */}
                 <div
-                    className="tiptap w-full col-span-2"
+                    className="tiptap w-full col-span-2 order-1 md:order-2"
                     dangerouslySetInnerHTML={{ __html: event.description }}
                 />
 

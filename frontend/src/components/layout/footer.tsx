@@ -19,7 +19,7 @@ export default function Footer() {
 
     return (
         <footer className="bg-gray-50 pt-8 pb-12">
-            <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-32">
+            <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-32">
                 {/* Kiri: Logo & Deskripsi */}
                 <div className="flex flex-col gap-4 md:justify-between items-center md:items-start text-center md:text-left">
                     <div className="flex items-center gap-2">

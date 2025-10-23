@@ -27,9 +27,9 @@ import { slugify } from "@/lib/utils/slugify";
 
 const navLinks = [
     { key: "beranda", label: "Beranda", href: "/" },
+    { key: "tentang", label: "Tentang", href: "/about" },
     { key: "event", label: "Event", href: "/events" },
     { key: "galeri", label: "Galeri", href: "/gallery" },
-    { key: "artikel", label: "Artikel", href: "/artikel" },
 ];
 
 export default function Header() {
@@ -169,7 +169,7 @@ export default function Header() {
     return (
         <>
             <header
-                className={`z-50 fixed top-0 left-0 w-full transition-all duration-300 
+                className={`z-50 fixed top-0 left-0 w-full transition-all duration-300
                 ${hideHeader ? "-translate-y-full" : "translate-y-0"} 
                 ${isTop ? "bg-transparent" : "bg-white shadow"} 
         `}>

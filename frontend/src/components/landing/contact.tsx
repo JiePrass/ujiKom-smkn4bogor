@@ -7,7 +7,7 @@ import { Mail, Phone } from "lucide-react";
 
 export default function ContactSection() {
     return (
-        <section className="container mx-auto grid md:grid-cols-2 gap-20 py-16">
+        <section className="container mx-auto px-6 grid md:grid-cols-2 gap-20 py-16">
             {/* Kiri - Info Kontak */}
             <div className="space-y-8">
                 <h2 className="text-3xl md:text-5xl font-bold leading-tight">

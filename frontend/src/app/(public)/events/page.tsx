@@ -182,8 +182,8 @@ export default function EventsPage() {
                             />
                             <div className="absolute inset-0 bg-black/30 z-10" />
                             {/* Content */}
-                            <div className="relative z-20 grid py-24 grid-cols-1 md:grid-cols-2 w-full p-8 gap-6 items-center">
-                                <div className="text-white">
+                            <div className="relative z-20 grid py-24 grid-cols-1 md:grid-cols-2 w-full p-6 gap-6 items-center">
+                                <div className="text-white order-2 md:order-1">
                                     <h2 className="text-4xl font-bold mb-6">
                                         {heroEvents[currentIndex]?.title}
                                     </h2>
@@ -235,7 +235,7 @@ export default function EventsPage() {
                                 </div>
 
                                 {/* Flyer */}
-                                <div className="flex justify-end items-center">
+                                <div className="flex justify-center order-1 md:order-1 md:justify-end items-center">
                                     <div className="w-40 md:w-52 lg:w-80">
                                         <Image
                                             src={`${heroEvents[currentIndex]?.flyerUrl}`}
@@ -269,7 +269,7 @@ export default function EventsPage() {
             </div>
 
             {/* List Section */}
-            <div className="flex flex-col container mx-auto px-6 md:px-0 mb-20">
+            <div className="flex flex-col container mx-auto px-6 mb-20">
                 <div className="flex flex-col md:flex-row justify-between mb-6 gap-4 md:items-center">
                     <h2 className="text-3xl font-semibold">
                         Hari ini mau ikut event apa?
