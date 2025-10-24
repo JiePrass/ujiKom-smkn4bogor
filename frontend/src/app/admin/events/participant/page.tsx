@@ -29,7 +29,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { EventSelector } from "@/components/shared/eventSelector";
+import { RegisterEventSelector } from "@/components/shared/registerEventSelector";
 import LoadingScreen from "@/components/layout/loadingScreen";
 import QRModal from "@/components/shared/modals/qrModal";
 
@@ -221,7 +221,7 @@ export default function AdminParticipantPage() {
                     </div>
 
                     {/* Select Event */}
-                    <EventSelector
+                    <RegisterEventSelector
                         events={events}
                         selectedEvent={selectedEvent}
                         setSelectedEvent={setSelectedEvent}

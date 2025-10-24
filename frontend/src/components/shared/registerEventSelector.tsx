@@ -18,14 +18,21 @@ import {
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 
-export function EventSelector({ events, selectedEvent, setSelectedEvent }: {
-    events: { id: number; title: string }[];
-    selectedEvent: number | null;
-    setSelectedEvent: (val: number | null) => void;
+type EventSummary = {
+    id: number;
+    title: string;
+    qrCodeUrl?: string;
+};
+
+export function RegisterEventSelector({ events, selectedEvent, setSelectedEvent, onEventChange, }: {
+    events: EventSummary[];
+    selectedEvent: EventSummary | null;
+    setSelectedEvent: (val: EventSummary | null) => void;
+    onEventChange?: (eventId: number) => void;
 }) {
     const [open, setOpen] = React.useState(false);
 
-    const selected = events.find((e) => e.id === selectedEvent);
+    const selected = selectedEvent;
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -51,14 +58,15 @@ export function EventSelector({ events, selectedEvent, setSelectedEvent }: {
                                     key={event.id}
                                     value={event.title}
                                     onSelect={() => {
-                                        setSelectedEvent(event.id);
+                                        setSelectedEvent(event);
+                                        onEventChange?.(event.id);
                                         setOpen(false);
                                     }}
                                 >
                                     <Check
                                         className={cn(
                                             "mr-2 h-4 w-4",
-                                            selectedEvent === event.id ? "opacity-100" : "opacity-0"
+                                            selectedEvent?.id === event.id ? "opacity-100" : "opacity-0"
                                         )}
                                     />
                                     {event.title}
