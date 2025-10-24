@@ -10,20 +10,20 @@ const slides = [
     {
         bg: "/images/feature-1.png",
         logo: "/icons/simkas-main-white.svg",
-        title: "Lorem Ipsum Dolor",
-        desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
+        title: "Ikuti Kegiatan Lebih Mudah",
+        desc: "Daftar dan kelola keikutsertaan Anda dalam berbagai kegiatan tanpa ribet, langsung dari satu platform.",
     },
     {
         bg: "/images/feature-2.png",
         logo: "/icons/simkas-main-white.svg",
-        title: "Lorem Ipsum Dolor",
-        desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
+        title: "Notifikasi dan Jadwal Real-Time",
+        desc: "Dapatkan pemberitahuan langsung tentang jadwal, pengumuman, dan informasi penting seputar kegiatan Anda.",
     },
     {
         bg: "/images/feature-3.png",
         logo: "/icons/simkas-main-white.svg",
-        title: "Lorem Ipsum Dolor",
-        desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
+        title: "Unduh Sertifikat Kapan Saja",
+        desc: "Setelah kegiatan selesai, Anda dapat mengunduh sertifikat keikutsertaan secara praktis dan cepat.",
     },
 ]
 
@@ -39,6 +39,7 @@ export default function LoginPage() {
 
     return (
         <div className="grid min-h-svh lg:grid-cols-12">
+            {/* Left Side - Form */}
             <div className="flex flex-col gap-4 p-6 md:p-8 lg:col-span-7">
                 <div className="flex justify-center md:justify-start">
                     <Link href="/">
@@ -57,6 +58,7 @@ export default function LoginPage() {
                 </div>
             </div>
 
+            {/* Right Side - Carousel */}
             <div className="relative hidden lg:block lg:col-span-5 overflow-hidden">
                 <AnimatePresence mode="sync">
                     <motion.div
@@ -72,9 +74,11 @@ export default function LoginPage() {
                             src={slides[current].bg}
                             alt="Background"
                             fill
-                            className="object-cover dark:brightness-[0.4]"
+                            className="object-cover"
                             priority
                         />
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
 
                         {/* Overlay Content */}
                         <div className="relative z-10 flex flex-col items-center justify-end text-center px-8 h-full text-white pb-24">
@@ -108,7 +112,7 @@ export default function LoginPage() {
                                         onClick={() => setCurrent(i)}
                                         className={`h-2.5 w-2.5 rounded-full transition-colors duration-300 ${current === i
                                             ? "bg-primary"
-                                            : "bg-white"
+                                            : "bg-white/60 hover:bg-white"
                                             }`}
                                     />
                                 ))}

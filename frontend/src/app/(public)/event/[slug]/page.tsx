@@ -98,12 +98,23 @@ export default function EventDetailPage() {
 
     useEffect(() => {
         if (!event) return;
+
         const updateWindow = () => {
-            const start = new Date(`${event.date}T${event.time}`);
+            // Ambil tanggal dari event.date
+            const datePart = new Date(event.date).toISOString().split("T")[0]; // "2025-10-24"
+
+            // Ambil jam dari event.time
+            const [hours, minutes] = event.time.split(":").map(Number);
+
+            // Gabungkan tanggal dan waktu (anggap waktu lokal WIB)
+            const start = new Date(datePart);
+            start.setHours(hours, minutes, 0, 0);
+
             const now = new Date();
             const diffMinutes = (now.getTime() - start.getTime()) / (1000 * 60);
             setIsWithinAttendWindow(diffMinutes >= 0 && diffMinutes <= 120);
         };
+
         updateWindow();
         const t = setInterval(updateWindow, 30 * 1000);
         return () => clearInterval(t);

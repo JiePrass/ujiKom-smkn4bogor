@@ -10,20 +10,20 @@ const slides = [
     {
         bg: "/images/feature-1.png",
         logo: "/icons/simkas-main-white.svg",
-        title: "Lorem Ipsum Dolor",
-        desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
+        title: "Ikuti Kegiatan Lebih Mudah",
+        desc: "Daftar dan kelola keikutsertaan Anda dalam berbagai kegiatan tanpa ribet, langsung dari satu platform.",
     },
     {
         bg: "/images/feature-2.png",
         logo: "/icons/simkas-main-white.svg",
-        title: "Aksi Nyata untuk Bumi Hijau",
-        desc: "Matikan lampu saat tidak digunakan dan kurangi jejak karbon mulai dari rumah.",
+        title: "Notifikasi dan Jadwal Real-Time",
+        desc: "Dapatkan pemberitahuan langsung tentang jadwal, pengumuman, dan informasi penting seputar kegiatan Anda.",
     },
     {
         bg: "/images/feature-3.png",
         logo: "/icons/simkas-main-white.svg",
-        title: "Lorem Ipsum Dolor",
-        desc: "Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing Elit.",
+        title: "Unduh Sertifikat Kapan Saja",
+        desc: "Setelah kegiatan selesai, Anda dapat mengunduh sertifikat keikutsertaan secara praktis dan cepat.",
     },
 ]
 
@@ -38,7 +38,8 @@ export default function RegisterPage() {
     }, [])
 
     return (
-        <div className="grid min-h-svh lg:grid-cols-12">
+        <div className="grid h-screen overflow-hidden lg:grid-cols-12">
+            {/* === Left side - Slideshow === */}
             <div className="relative hidden lg:block lg:col-span-5 overflow-hidden">
                 <AnimatePresence mode="sync">
                     <motion.div
@@ -53,13 +54,15 @@ export default function RegisterPage() {
                             src={slides[current].bg}
                             alt="Background"
                             fill
-                            className="object-cover dark:brightness-[0.4]"
+                            className="object-cover"
                             priority
                         />
 
-                        {/* Overlay Content */}
+                        {/* Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+
+                        {/* Content */}
                         <div className="relative z-10 flex flex-col items-center justify-end text-center px-8 h-full text-white pb-24">
-                            <div className="absolute inset-0 bg-black/40" />
                             <motion.div
                                 key={current + "-content"}
                                 initial={{ y: 20, opacity: 0 }}
@@ -74,24 +77,23 @@ export default function RegisterPage() {
                                     width={48}
                                     height={48}
                                 />
-                                <div className="z-10">
-                                    <h2 className="text-2xl font-semibold leading-snug max-w-xs">
-                                        {slides[current].title}
-                                    </h2>
-                                    <p className="text-sm text-gray-200 max-w-sm">
-                                        {slides[current].desc}
-                                    </p>
-                                </div>
+                                <h2 className="text-2xl font-semibold leading-snug max-w-xs">
+                                    {slides[current].title}
+                                </h2>
+                                <p className="text-sm text-gray-200 max-w-sm">
+                                    {slides[current].desc}
+                                </p>
                             </motion.div>
 
-                            <div className="flex gap-2 mt-6 z-10">
+                            {/* Dots */}
+                            <div className="flex gap-2 mt-6">
                                 {slides.map((_, i) => (
                                     <button
                                         key={i}
                                         onClick={() => setCurrent(i)}
                                         className={`h-2.5 w-2.5 rounded-full transition-colors duration-300 ${current === i
                                             ? "bg-primary"
-                                            : "bg-white"
+                                            : "bg-white/70 hover:bg-white"
                                             }`}
                                     />
                                 ))}
@@ -101,7 +103,8 @@ export default function RegisterPage() {
                 </AnimatePresence>
             </div>
 
-            <div className="flex flex-col gap-4 p-6 md:p-8 lg:col-span-7">
+            {/* === Right side - Form (scrollable only inside this section) === */}
+            <div className="relative flex flex-col gap-4 p-6 md:p-8 lg:col-span-7 h-screen overflow-y-auto">
                 <div className="flex justify-center md:justify-start">
                     <Link href="/">
                         <Image
@@ -112,6 +115,8 @@ export default function RegisterPage() {
                         />
                     </Link>
                 </div>
+
+                {/* Scrollable form area */}
                 <div className="flex flex-1 items-center justify-center">
                     <div className="w-full max-w-md">
                         <RegisterForm />
