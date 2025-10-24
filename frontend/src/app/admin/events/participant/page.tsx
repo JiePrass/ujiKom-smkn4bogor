@@ -32,7 +32,12 @@ import { cn } from "@/lib/utils";
 import { EventSelector } from "@/components/shared/eventSelector";
 import LoadingScreen from "@/components/layout/loadingScreen";
 import QRModal from "@/components/shared/modals/qrModal";
-import { Event } from "@/types/model";
+
+type EventSummary = {
+    id: number;
+    title: string;
+    qrCodeUrl?: string;
+};
 
 interface Registration {
     id: number;
@@ -47,9 +52,9 @@ interface Registration {
 type StatusType = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
 
 export default function AdminParticipantPage() {
-    const [events, setEvents] = useState<Event[]>([]);
+    const [events, setEvents] = useState<EventSummary[]>([]);
     const [showQRModal, setShowQRModal] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+    const [selectedEvent, setSelectedEvent] = useState<EventSummary | null>(null);
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [proofPreview, setProofPreview] = useState<string | null>(null);
 

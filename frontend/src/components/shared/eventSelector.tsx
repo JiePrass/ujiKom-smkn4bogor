@@ -17,12 +17,17 @@ import {
     CommandList,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Event } from "@/types/model";
+
+type EventSummary = {
+    id: number;
+    title: string;
+    qrCodeUrl?: string;
+};
 
 export function EventSelector({ events, selectedEvent, setSelectedEvent, onEventChange, }: {
-    events: Event[];
-    selectedEvent: Event | null;
-    setSelectedEvent: (val: Event | null) => void;
+    events: EventSummary[];
+    selectedEvent: EventSummary | null;
+    setSelectedEvent: (val: EventSummary | null) => void;
     onEventChange?: (eventId: number) => void;
 }) {
     const [open, setOpen] = React.useState(false);
