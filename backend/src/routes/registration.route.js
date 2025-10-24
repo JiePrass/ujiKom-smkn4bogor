@@ -41,4 +41,12 @@ router.get("/:eventId/export",
     requireRole("ADMIN"),
     registrationController.exportRegistrationsCSV);
 
+// Download QR Code for a registration
+router.get(
+    '/event/:eventId/download-qrcode',
+    requireLogin,
+    requireRole('ADMIN'),
+    registrationController.downloadQRCode
+);
+
 module.exports = router

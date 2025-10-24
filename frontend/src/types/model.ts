@@ -36,6 +36,7 @@ export interface Event {
     location: string;
     flyerUrl?: string | null;
     eventBannerUrl?: string | null;
+    qrCodeUrl?: string | null;
     eventType: string;
     createdBy: number;
     price: number;

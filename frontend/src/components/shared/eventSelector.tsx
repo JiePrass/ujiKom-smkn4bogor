@@ -17,15 +17,17 @@ import {
     CommandList,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
+import { Event } from "@/types/model";
 
-export function EventSelector({ events, selectedEvent, setSelectedEvent }: {
-    events: { id: number; title: string }[];
-    selectedEvent: number | null;
-    setSelectedEvent: (val: number | null) => void;
+export function EventSelector({ events, selectedEvent, setSelectedEvent, onEventChange, }: {
+    events: Event[];
+    selectedEvent: Event | null;
+    setSelectedEvent: (val: Event | null) => void;
+    onEventChange?: (eventId: number) => void;
 }) {
     const [open, setOpen] = React.useState(false);
 
-    const selected = events.find((e) => e.id === selectedEvent);
+    const selected = selectedEvent;
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -51,14 +53,15 @@ export function EventSelector({ events, selectedEvent, setSelectedEvent }: {
                                     key={event.id}
                                     value={event.title}
                                     onSelect={() => {
-                                        setSelectedEvent(event.id);
+                                        setSelectedEvent(event);
+                                        onEventChange?.(event.id);
                                         setOpen(false);
                                     }}
                                 >
                                     <Check
                                         className={cn(
                                             "mr-2 h-4 w-4",
-                                            selectedEvent === event.id ? "opacity-100" : "opacity-0"
+                                            selectedEvent?.id === event.id ? "opacity-100" : "opacity-0"
                                         )}
                                     />
                                     {event.title}

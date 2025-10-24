@@ -49,4 +49,8 @@ router.post(
     attendanceController.attend
 )
 
+router.post('/scan-qr', 
+    requireLogin, 
+    attendanceController.scanQR);
+
 module.exports = router

@@ -53,6 +53,9 @@ model Event {
   createdBy      Int
   price          Int            @default(0)
   createdByUser  User           @relation("UserCreatedEvents", fields: [createdBy], references: [id])
+  qrCode         String?
+  qrCodeUrl      String?
+  qrExpiresAt    DateTime?
   registrations  Registration[]
   createdAt      DateTime       @default(now())
   Gallery        Gallery[]
@@ -67,6 +70,7 @@ model Registration {
   token           String?      @unique
   registeredAt    DateTime     @default(now())
   attendance      Attendance?
+  checkedInAt     DateTime?
   certificate     Certificate?
   paymentProofUrl String?
   status          String?

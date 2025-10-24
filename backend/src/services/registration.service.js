@@ -1,9 +1,10 @@
 const { PrismaClient } = require('@prisma/client');
 const { Parser } = require("json2csv");
 const cloudinary = require('cloudinary').v2;
-const mailer = require('../utils/mailer')
+const mailer = require('../utils/mailer');
 const prisma = new PrismaClient();
 const fs = require('fs');
+const axios = require('axios')
 
 // === Konfigurasi Cloudinary ===
 cloudinary.config({
@@ -22,7 +23,9 @@ function generateAlphanumericToken(length = 8) {
     return token;
 }
 
-// === Registrasi ke event ===
+/** =======================
+ *  REGISTER TO EVENT
+ *  ======================= */
 exports.registerToEvent = async (eventId, req, user) => {
     try {
         const event = await prisma.event.findUnique({
@@ -57,7 +60,6 @@ exports.registerToEvent = async (eventId, req, user) => {
                 console.error("Cloudinary upload failed:", err.message);
                 throw new Error("Gagal mengunggah bukti pembayaran.");
             } finally {
-                // Hapus file lokal sementara
                 if (paymentProofFile?.path && fs.existsSync(paymentProofFile.path)) {
                     fs.unlinkSync(paymentProofFile.path);
                 }
@@ -66,7 +68,6 @@ exports.registerToEvent = async (eventId, req, user) => {
             token = generateAlphanumericToken(8);
         }
 
-        // === Simpan ke database ===
         const registration = await prisma.registration.create({
             data: {
                 userId: user.id,
@@ -78,9 +79,8 @@ exports.registerToEvent = async (eventId, req, user) => {
             include: { event: true, user: true }
         });
 
-        // === Kirim email token kalau sudah punya token ===
+        // === Kirim email token kalau APPROVED ===
         if (status === "APPROVED") {
-            // Pastikan token ada (karena event gratis otomatis punya token)
             if (!token) {
                 token = generateAlphanumericToken(8);
                 await prisma.registration.update({
@@ -90,22 +90,20 @@ exports.registerToEvent = async (eventId, req, user) => {
             }
 
             try {
-                console.log("📧 Mengirim email ke:", registration.user.email);
                 await mailer(
                     registration.user.email,
                     `Token Pendaftaran Event ${event.title}`,
                     `
-                    <p>Halo ${user.fullName},</p>
-                    <p>Terima kasih telah mendaftar pada event <strong>${event.title}</strong>.</p>
-                    <p>Berikut token pendaftaran Anda:</p>
-                    <h2 style="letter-spacing: 2px; color: #2E86DE;">${token}</h2>
-                    <p>Gunakan token ini untuk verifikasi kehadiran saat event berlangsung.</p>
-                    <p>Salam,<br/>Tim SIMKAS</p>
-                    `
+            <p>Halo ${user.fullName},</p>
+            <p>Terima kasih telah mendaftar pada event <strong>${event.title}</strong>.</p>
+            <p>Berikut token pendaftaran Anda:</p>
+            <h2 style="letter-spacing: 2px; color: #2E86DE;">${token}</h2>
+            <p>Gunakan token ini untuk verifikasi kehadiran saat event berlangsung.</p>
+            <p>Salam,<br/>Tim SIMKAS</p>
+            `
                 );
-                console.log("✅ Email berhasil dikirim ke:", user.email);
             } catch (err) {
-                console.error("❌ Email gagal dikirim:", err);
+                console.error("❌ Email gagal dikirim:", err.message);
             }
         }
 
@@ -122,14 +120,43 @@ exports.registerToEvent = async (eventId, req, user) => {
     }
 };
 
-// === Fungsi lainnya (tetap sama) ===
+/** =======================
+ *  GET REGISTRATION BY EVENT
+ *  ======================= */
 exports.getRegistrationsByEvent = async (eventId) => {
-    return prisma.registration.findMany({
+    const registrations = await prisma.registration.findMany({
         where: { eventId: parseInt(eventId) },
-        include: { user: true }
+        include: {
+            user: true,
+            event: {
+                select: {
+                    id: true,
+                    title: true,
+                    qrCode: true,
+                    qrExpiresAt: true,  
+                },
+            },
+        },
     });
-};
 
+    return registrations.map((r) => ({
+        id: r.id,
+        user: {
+            fullName: r.user.fullName,
+            email: r.user.email,
+            phone: r.user.phone,
+        },
+        status: r.status,
+        isAttended: r.isAttended,
+        token: r.token,
+        qrCode: r.event.qrCode,
+        qrExpiresAt: r.event.qrExpiresAt,
+    }));
+};
+    
+/** =======================
+ *  EXPORT REGISTRATION CSV
+ *  ======================= */
 exports.exportRegistrationsCSV = async (eventId) => {
     const registrations = await exports.getRegistrationsByEvent(eventId);
     if (!registrations.length) throw new Error("Tidak ada data registrasi");
@@ -147,6 +174,30 @@ exports.exportRegistrationsCSV = async (eventId) => {
     return "\uFEFF" + parser.parse(registrations).replace(/\n/g, "\r\n");
 };
 
+/** =======================
+ *  DOWNLOAD QR CODE IMAGE
+ *  ======================= */
+exports.downloadQRCode = async (eventId) => {
+    const event = await prisma.event.findUnique({
+        where: { id: parseInt(eventId) },
+        select: { title: true, qrCodeUrl: true },
+    });
+
+    if (!event || !event.qrCodeUrl) {
+        throw new Error("QR code tidak ditemukan.");
+    }
+
+    const response = await axios.get(event.qrCodeUrl, { responseType: 'arraybuffer' });
+
+    return {
+        filename: `${event.title.replace(/\s+/g, "_")}_QRCode.png`,
+        data: Buffer.from(response.data),
+    };
+};
+
+/** =======================
+ *  UPDATE PAYMENT STATUS
+ *  ======================= */
 exports.updatePaymentStatus = async (registrationId, status) => {
     if (!["PENDING", "APPROVED", "REJECTED"].includes(status)) {
         throw new Error("Status tidak valid");
@@ -154,7 +205,7 @@ exports.updatePaymentStatus = async (registrationId, status) => {
 
     const registration = await prisma.registration.findUnique({
         where: { id: parseInt(registrationId) },
-        include: { event: true, user: true }
+        include: { event: true, user: true },
     });
     if (!registration) throw new Error("Registrasi tidak ditemukan");
 
@@ -169,13 +220,13 @@ exports.updatePaymentStatus = async (registrationId, status) => {
                 registration.user.email,
                 `Token Pendaftaran Event ${registration.event.title}`,
                 `
-                <p>Halo ${registration.user.fullName},</p>
-                <p>Pembayaran Anda untuk event <strong>${registration.event.title}</strong> telah disetujui.</p>
-                <p>Berikut token pendaftaran Anda:</p>
-                <h2 style="letter-spacing: 2px; color: #2E86DE;">${token}</h2>
-                <p>Gunakan token ini untuk verifikasi kehadiran saat event berlangsung.</p>
-                <p>Salam,<br/>Tim SIMKAS</p>
-                `
+        <p>Halo ${registration.user.fullName},</p>
+        <p>Pembayaran Anda untuk event <strong>${registration.event.title}</strong> telah disetujui.</p>
+        <p>Berikut token pendaftaran Anda:</p>
+        <h2 style="letter-spacing: 2px; color: #2E86DE;">${token}</h2>
+        <p>Gunakan token ini untuk verifikasi kehadiran saat event berlangsung.</p>
+        <p>Salam,<br/>Tim SIMKAS</p>
+        `
             );
         } catch (err) {
             console.error("Email gagal dikirim:", err.message);
@@ -184,13 +235,16 @@ exports.updatePaymentStatus = async (registrationId, status) => {
 
     return prisma.registration.update({
         where: { id: parseInt(registrationId) },
-        data: updateData
+        data: updateData,
     });
 };
 
+/** =======================
+ *  CHECK USER REGISTRATION
+ *  ======================= */
 exports.checkUserRegistration = async (eventId, userId) => {
     const registration = await prisma.registration.findFirst({
-        where: { eventId: parseInt(eventId), userId }
+        where: { eventId: parseInt(eventId), userId },
     });
     return !!registration;
 };

@@ -57,3 +57,18 @@ exports.exportRegistrationsCSV = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.downloadQRCode = async (req, res) => {
+    const { eventId } = req.params;
+
+    try {
+        const { filename, data } = await registrationService.downloadQRCode(eventId);
+
+        res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+        res.setHeader("Content-Type", "image/png");
+        res.send(data);
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ error: err.message });
+    }
+};

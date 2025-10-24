@@ -2,9 +2,13 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { exportRegistrationCSV, getRegistrationsByEvent, updatePaymentStatus } from "@/lib/api/registration";
+import {
+    exportRegistrationCSV,
+    getRegistrationsByEvent,
+    updatePaymentStatus,
+} from "@/lib/api/registration";
 import { getAllEvents } from "@/lib/api/event";
-import { ArrowUpDown, Download, Funnel, Users } from "lucide-react";
+import { ArrowUpDown, Download, Funnel, QrCode, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -27,11 +31,8 @@ import {
 import { cn } from "@/lib/utils";
 import { EventSelector } from "@/components/shared/eventSelector";
 import LoadingScreen from "@/components/layout/loadingScreen";
-
-interface Event {
-    id: number;
-    title: string;
-}
+import QRModal from "@/components/shared/modals/qrModal";
+import { Event } from "@/types/model";
 
 interface Registration {
     id: number;
@@ -47,7 +48,8 @@ type StatusType = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
 
 export default function AdminParticipantPage() {
     const [events, setEvents] = useState<Event[]>([]);
-    const [selectedEvent, setSelectedEvent] = useState<number | null>(null);
+    const [showQRModal, setShowQRModal] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [proofPreview, setProofPreview] = useState<string | null>(null);
 
@@ -67,8 +69,9 @@ export default function AdminParticipantPage() {
                 setEvents(data);
 
                 if (data.length > 0) {
-                    setSelectedEvent(data[0].id);
-                    await fetchRegistrations(data[0].id);
+                    const firstEvent = data[0];
+                    setSelectedEvent(firstEvent);
+                    await fetchRegistrations(firstEvent.id);
                 }
             } catch (err) {
                 console.error("Gagal fetch events:", err);
@@ -78,12 +81,6 @@ export default function AdminParticipantPage() {
         }
         fetchEvents();
     }, []);
-
-    useEffect(() => {
-        if (selectedEvent) {
-            fetchRegistrations(selectedEvent);
-        }
-    }, [selectedEvent]);
 
     async function fetchRegistrations(eventId: number) {
         try {
@@ -99,12 +96,11 @@ export default function AdminParticipantPage() {
     }
 
     async function handleStatusUpdate(id: number, status: "PENDING" | "APPROVED" | "REJECTED") {
+        if (!selectedEvent) return;
         try {
             setLoading(true);
             await updatePaymentStatus(id, status);
-            if (selectedEvent) {
-                await fetchRegistrations(selectedEvent);
-            }
+            await fetchRegistrations(selectedEvent.id);
         } catch (err) {
             console.error("Gagal update status:", err);
         } finally {
@@ -133,11 +129,11 @@ export default function AdminParticipantPage() {
     async function handleExportCSV() {
         if (!selectedEvent) return;
         try {
-            const blob = await exportRegistrationCSV(selectedEvent);
+            const blob = await exportRegistrationCSV(selectedEvent.id);
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = `registrations-event-${selectedEvent}.csv`;
+            link.download = `registrations-event-${selectedEvent.id}.csv`;
             link.click();
             window.URL.revokeObjectURL(url);
         } catch (err) {
@@ -145,7 +141,6 @@ export default function AdminParticipantPage() {
         }
     }
 
-    // ✅ tampilkan loading screen saat data dimuat
     if (loading) {
         return <LoadingScreen show={loading} text="Memuat data peserta event..." />;
     }
@@ -157,6 +152,16 @@ export default function AdminParticipantPage() {
                 <h2 className="text-3xl font-semibold">Pendaftaran Event</h2>
 
                 <div className="flex items-center gap-2">
+                    {/* QR */}
+                    <Button
+                        variant="secondary"
+                        className="border bg-white p-0 border-gray-100 aspect-square rounded-sm"
+                        onClick={() => setShowQRModal(true)}
+                        disabled={!selectedEvent}
+                    >
+                        <QrCode width={20} />
+                    </Button>
+
                     {/* Export */}
                     <Button
                         variant="secondary"
@@ -188,19 +193,24 @@ export default function AdminParticipantPage() {
 
                         {showFilterDropdown && (
                             <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-md z-10">
-                                {(["ALL", "PENDING", "APPROVED", "REJECTED"] as StatusType[]).map((status) => (
-                                    <div
-                                        key={status}
-                                        className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${filterStatus === status ? "bg-gray-50 font-semibold" : ""}`}
-                                        onClick={() => {
-                                            setFilterStatus(status);
-                                            setShowFilterDropdown(false);
-                                            setCurrentPage(1);
-                                        }}
-                                    >
-                                        {status}
-                                    </div>
-                                ))}
+                                {(["ALL", "PENDING", "APPROVED", "REJECTED"] as StatusType[]).map(
+                                    (status) => (
+                                        <div
+                                            key={status}
+                                            className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${filterStatus === status
+                                                ? "bg-gray-50 font-semibold"
+                                                : ""
+                                                }`}
+                                            onClick={() => {
+                                                setFilterStatus(status);
+                                                setShowFilterDropdown(false);
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            {status}
+                                        </div>
+                                    )
+                                )}
                             </div>
                         )}
                     </div>
@@ -210,6 +220,7 @@ export default function AdminParticipantPage() {
                         events={events}
                         selectedEvent={selectedEvent}
                         setSelectedEvent={setSelectedEvent}
+                        onEventChange={(eventId) => fetchRegistrations(eventId)}
                     />
                 </div>
             </div>
@@ -279,7 +290,6 @@ export default function AdminParticipantPage() {
                         </TableBody>
                     </Table>
 
-                    {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="flex justify-center mt-4">
                             <Pagination>
@@ -340,7 +350,6 @@ export default function AdminParticipantPage() {
                     )}
                 </>
             ) : (
-                // ✅ Empty State tampilan elegan
                 <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
                     <Users className="w-16 h-16 mb-4 opacity-50" />
                     <p className="text-lg font-medium">Belum ada peserta untuk event ini.</p>
@@ -358,11 +367,7 @@ export default function AdminParticipantPage() {
                     </DialogHeader>
                     {proofPreview && (
                         <Image
-                            src={
-                                proofPreview.startsWith("http")
-                                    ? proofPreview
-                                    : `${proofPreview}`
-                            }
+                            src={proofPreview}
                             alt="Bukti Pembayaran"
                             className="w-full rounded-lg"
                             width={500}
@@ -371,6 +376,13 @@ export default function AdminParticipantPage() {
                     )}
                 </DialogContent>
             </Dialog>
+
+            <QRModal
+                isOpen={showQRModal}
+                onClose={() => setShowQRModal(false)}
+                eventId={selectedEvent?.id ?? 0}
+                qrImageUrl={selectedEvent?.qrCodeUrl ?? ""}
+            />
         </div>
     );
 }

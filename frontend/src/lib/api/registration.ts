@@ -35,3 +35,19 @@ export async function exportRegistrationCSV(eventId: number) {
     });
     return res.data; 
 }
+
+export async function downloadEventQR(eventId: number) {
+    const res = await axiosInstance.get(`/registration/event/${eventId}/download-qrcode`, {
+        responseType: "blob",
+    });
+
+    // Buat URL dari blob untuk diunduh
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `event_${eventId}_qr.png`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+}

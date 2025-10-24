@@ -53,7 +53,7 @@ exports.register = async (data) => {
         <h2>${otp}</h2>
         <p>Kode ini berlaku selama 5 menit. Jangan berikan kode ini ke siapapun.</p>
     `;
-    await mailer(email, 'Verifikasi Email Akun Event App', emailHtml);
+    await mailer(email, 'Verifikasi Email Akun SIMKAS', emailHtml);
 
     return { message: 'Akun berhasil dibuat. Silakan cek email untuk verifikasi dalam 5 menit.' };
 };

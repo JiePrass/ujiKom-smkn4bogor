@@ -11,3 +11,15 @@ exports.attend = async (req, res) => {
         res.status(400).json({ error: error.message })
     }
 }
+
+exports.scanQR = async (req, res) => {
+    const { eventId } = req.body; 
+    const userId = req.user.id; 
+
+    try {
+        const result = await attendanceService.attendWithQR(eventId, userId);
+        res.json(result);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
