@@ -37,9 +37,24 @@ exports.getAllGalleries = async (page = 1, limit = 20) => {
             take: limit,
             include: {
                 media: true,
-                user: { select: { id: true, fullName: true, profilePicture: true } },
+                user: {
+                    select: { id: true, fullName: true, profilePicture: true }
+                },
+                likes: {
+                    select: { userId: true }
+                },
+                comments: {
+                    take: 2,                 
+                    orderBy: { createdAt: "desc" },
+                    include: {
+                        user: {
+                            select: { id: true, fullName: true, profilePicture: true }
+                        }
+                    },
+                },
                 _count: { select: { likes: true, comments: true } },
             },
+
             orderBy: { createdAt: "desc" },
         }),
         prisma.gallery.count(),
