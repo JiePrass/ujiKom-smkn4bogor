@@ -1,22 +1,26 @@
-const nodemailer = require('nodemailer');
+// utils/mailer.js
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST, // misalnya "smtp.gmail.com"
-    port: process.env.SMTP_PORT || 587,
-    secure: false, // true untuk port 465
-    auth: {
-        user: process.env.SMTP_USER, // email pengirim
-        pass: process.env.SMTP_PASS  // password / app password
-    }
-});
+if (!process.env.RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY belum diset di environment variables");
+}
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendEmail(to, subject, html) {
-    await transporter.sendMail({
-        from: `"SIMKAS" <${process.env.SMTP_USER}>`,
-        to,
-        subject,
-        html
-    });
+    try {
+        const resp = await resend.emails.send({
+            from: "SIMKAS <noreply@simkas.highfiveindonesia.com>",
+            to,
+            subject,
+            html,
+        });
+
+        return resp;
+    } catch (err) {
+        console.error("Resend send email error:", err);
+        throw err;
+    }
 }
 
 module.exports = sendEmail;
