@@ -193,7 +193,7 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                         return (
                             <motion.div
                                 layout
-                                className="absolute left-0 w-1 bg-blue-600 rounded-r"
+                                className="absolute left-0 w-1 bg-primary rounded-r"
                                 style={{
                                     top: isValid ? `${activeIndex * 42}px` : 0,
                                     height: "38px",
@@ -211,8 +211,8 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                                 href={item.href}
                                 onClick={onClose}
                                 className={`font-medium flex items-center gap-2 px-4 rounded-lg py-2 transition-colors ${getIsActive(item.href)
-                                    ? "text-blue-600 bg-gray-100"
-                                    : "text-gray-700 hover:text-blue-600 hover:bg-gray-100"
+                                    ? "text-primary bg-gray-100"
+                                    : "text-gray-700 hover:text-primary hover:bg-gray-100"
                                     }`}
                             >
                                 <span>{item.label}</span>
@@ -223,7 +223,7 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                     {isLoggedIn && userData && (
                         <button
                             onClick={() => setShowNotifications(true)}
-                            className="font-medium w-full text-gray-700 flex justify-between px-4 rounded-lg py-2 transition-colors hover:text-blue-600 hover:bg-gray-100"
+                            className="font-medium w-full text-gray-700 flex justify-between px-4 rounded-lg py-2 transition-colors hover:text-primary hover:bg-gray-100"
                         >
                             <div className="flex items-center gap-2">
                                 <span>Notifikasi</span>
@@ -247,13 +247,13 @@ export default function MobileMenu({ navLinks, onClose, userData, isLoggedIn, se
                     <div className="flex gap-2 justify-center w-full">
                         <Link
                             href="/login"
-                            className="text-sm px-4 w-1/2 py-2 bg-blue-600 text-white rounded-full transition-colors ease-in-out hover:bg-blue-700 text-center"
+                            className="text-sm px-4 w-1/2 py-2 bg-primary text-white rounded-full transition-colors ease-in-out hover:bg-accent text-center"
                         >
                             Login
                         </Link>
                         <Link
                             href="/register"
-                            className="text-sm px-4 py-2 w-1/2 border border-blue-600 text-blue-600 transition-colors ease-in-out rounded-full hover:bg-blue-50 text-center"
+                            className="text-sm px-4 py-2 w-1/2 border border-primary text-primary transition-colors ease-in-out rounded-full hover:bg-accent text-center"
                         >
                             Register
                         </Link>

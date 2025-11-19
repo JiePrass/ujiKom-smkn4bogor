@@ -27,7 +27,7 @@ import { slugify } from "@/lib/utils/slugify";
 
 const navLinks = [
     { key: "beranda", label: "Beranda", href: "/" },
-    { key: "tentang", label: "Tentang", href: "/about" },
+    { key: "download_apk", label: "Download APK", href: "/#" },
     { key: "event", label: "Event", href: "/events" },
     { key: "galeri", label: "Galeri", href: "/gallery" },
 ];
