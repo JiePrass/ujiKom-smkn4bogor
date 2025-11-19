@@ -149,6 +149,7 @@ exports.getRegistrationsByEvent = async (eventId) => {
         status: r.status,
         isAttended: r.isAttended,
         token: r.token,
+        paymentProofUrl: r.paymentProofUrl,
         qrCode: r.event.qrCode,
         qrExpiresAt: r.event.qrExpiresAt,
     }));
