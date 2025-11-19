@@ -8,7 +8,9 @@ WORKDIR /app/backend
 COPY backend/package*.json ./
 
 # Install dependency sistem dan package Node.js
-RUN apt-get update && apt-get install -y python3 make g++ && \
+RUN apt-get update && apt-get install -y \
+    python3 make g++ \
+    libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev && \
     npm install --legacy-peer-deps
 
 # Copy seluruh isi folder backend ke dalam container

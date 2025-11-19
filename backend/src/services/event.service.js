@@ -223,7 +223,7 @@ exports.deleteEvent = async (id, user) => {
         throw new Error('Tidak memiliki izin untuk menghapus event ini.');
     }
 
-    // Hapus file dari Cloudinary jika ada
+    // Hapus Cloudinary
     if (event.flyerUrl) {
         const publicId = extractPublicId(event.flyerUrl);
         await cloudinary.uploader.destroy(publicId);
@@ -233,18 +233,51 @@ exports.deleteEvent = async (id, user) => {
         await cloudinary.uploader.destroy(publicId);
     }
 
-    // Hapus relasi data
+    // ==== HAPUS RELASI BERDASARKAN FOREIGN KEY ====
+
+    // Certificate
     await prisma.certificate.deleteMany({
         where: { registration: { eventId } },
     });
+
+    // Attendance
     await prisma.attendance.deleteMany({
         where: { registration: { eventId } },
     });
+
+    // Registration
     await prisma.registration.deleteMany({
         where: { eventId },
     });
 
+    // Gallery Reports
+    await prisma.galleryCommentReport.deleteMany({
+        where: { comment: { gallery: { eventId } } },
+    });
+
+    // Gallery Comments
+    await prisma.galleryComment.deleteMany({
+        where: { gallery: { eventId } },
+    });
+
+    // Gallery Likes
+    await prisma.galleryLike.deleteMany({
+        where: { gallery: { eventId } },
+    });
+
+    // Gallery Media
+    await prisma.galleryMedia.deleteMany({
+        where: { gallery: { eventId } },
+    });
+
+    // Gallery
+    await prisma.gallery.deleteMany({
+        where: { eventId },
+    });
+
+    // ==== TERAKHIR: HAPUS EVENT ====
     await prisma.event.delete({ where: { id: eventId } });
+
     return { message: 'Event berhasil dihapus' };
 };
 
