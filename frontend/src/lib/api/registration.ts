@@ -1,16 +1,8 @@
 // lib/api/registration.ts
 import axiosInstance from "./axiosInstance";
 
-export async function registerForEvent(eventId: number, paymentProof?: File) {
-    const formData = new FormData();
-    if (paymentProof) {
-        formData.append("paymentProof", paymentProof);
-    }
-
-    const res = await axiosInstance.post(`/registration/${eventId}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-    });
-
+export async function registerForEvent(eventId: number) {
+    const res = await axiosInstance.post(`/registration/${eventId}`);
     return res.data;
 }
 

@@ -2,12 +2,23 @@ require('dotenv').config();
 require('./cron/notification.cron');
 const express = require('express');
 const cors = require('cors');
-const { PrismaClient } = require('@prisma/client');
 const multer = require('multer');
+const { PrismaClient } = require('@prisma/client');
 
 const app = express();
 const prisma = new PrismaClient();
 
+// ----------------------------------------------------
+// 1️⃣ MIDTRANS WEBHOOK – WAJIB di paling atas
+// ----------------------------------------------------
+app.post('/payments/notification', express.json(), (req, res, next) => {
+  const paymentController = require('./controllers/payment.controller');
+  return paymentController.notification(req, res, next);
+});
+
+// ----------------------------------------------------
+// 2️⃣ CORS
+// ----------------------------------------------------
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
   : [];
@@ -23,19 +34,20 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// ✅ Body Parser
+// ----------------------------------------------------
+// 3️⃣ BODY PARSER
+// ----------------------------------------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Static
+// ----------------------------------------------------
+// 4️⃣ STATIC FILE
+// ----------------------------------------------------
 app.use('/uploads', express.static('uploads'));
 
-// ✅ Default route
-app.get('/', (req, res) => {
-  res.json({ message: 'Event Management API is running' });
-});
-
-// ✅ Routes
+// ----------------------------------------------------
+// 5️⃣ OTHER ROUTES
+// ----------------------------------------------------
 app.use('/auth', require('./routes/auth.route'));
 app.use('/events', require('./routes/event.route'));
 app.use('/registration', require('./routes/registration.route'));
@@ -44,9 +56,11 @@ app.use('/dashboard', require('./routes/dashboard.route'));
 app.use('/certificates', require('./routes/certificate.route'));
 app.use('/user', require('./routes/user.route'));
 app.use('/galleries', require('./routes/gallery.route'));
-app.use('/payments', require('./routes/payment.route'));
+app.use('/payments', require('./routes/payment.route'));   // bukan webhook
 
-// ✅ Error Handler
+// ----------------------------------------------------
+// 6️⃣ ERROR HANDLER
+// ----------------------------------------------------
 app.use((err, req, res, next) => {
   console.error("🔥 Global Error Handler:", err);
 
@@ -59,7 +73,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ✅ DB Check + Start Server
+// ----------------------------------------------------
+// 7️⃣ START SERVER
+// ----------------------------------------------------
 async function checkDB() {
   try {
     await prisma.$connect();

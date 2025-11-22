@@ -6,7 +6,6 @@ import { attendEvent, getEventById, getAllEvents } from "@/lib/api/event";
 import { registerForEvent, checkUserRegistration } from "@/lib/api/registration";
 import { useAuth } from "@/context/authContext";
 import { toast } from "sonner";
-import RegistrationModal from "@/components/shared/modals/registrationModal";
 import OtpModal from "@/components/shared/modals/otpModal";
 import EventDetailHero from "@/components/shared/eventDetailHero";
 import { Event } from "@/types/model";
@@ -41,9 +40,8 @@ export default function EventDetailPage() {
     const [loading, setLoading] = useState(true);
     const [loadingRecom, setLoadingRecom] = useState(true);
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isOtpOpen, setIsOtpOpen] = useState(false);
-    const [paymentProof, setPaymentProof] = useState<File | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [submitting, setSubmitting] = useState(false);
     const [hasRegistered, setHasRegistered] = useState(false);
     const [hasAttended, setHasAttended] = useState(false);
@@ -100,13 +98,9 @@ export default function EventDetailPage() {
         if (!event) return;
 
         const updateWindow = () => {
-            // Ambil tanggal dari event.date
-            const datePart = new Date(event.date).toISOString().split("T")[0]; // "2025-10-24"
-
-            // Ambil jam dari event.time
+            const datePart = new Date(event.date).toISOString().split("T")[0];
             const [hours, minutes] = event.time.split(":").map(Number);
 
-            // Gabungkan tanggal dan waktu (anggap waktu lokal WIB)
             const start = new Date(datePart);
             start.setHours(hours, minutes, 0, 0);
 
@@ -135,30 +129,37 @@ export default function EventDetailPage() {
         }
     };
 
-    const handleRegisterClick = () => {
+    const handleRegister = async () => {
         if (!isLoggedIn) {
-            toast.error("Silakan login terlebih dahulu untuk mendaftar.");
+            toast.error("Silakan login terlebih dahulu.");
             router.push("/login");
-        } else {
-            setIsModalOpen(true);
-        }
-    };
-
-    const handleSubmit = async () => {
-        if (!event) return;
-        if (event.price > 0 && !paymentProof) {
-            toast.error("Bukti pembayaran wajib diunggah untuk event berbayar.");
             return;
         }
+
+        if (!event) return;
+
         try {
             setSubmitting(true);
-            await registerForEvent(event.id, paymentProof || undefined);
-            setIsModalOpen(false);
-            setHasRegistered(true);
-            toast.success("Berhasil mendaftar ke event!");
+
+            const res = await registerForEvent(event.id);
+
+            // Event gratis
+            if (!event.price || event.price === 0) {
+                setHasRegistered(true);
+                toast.success("Pendaftaran berhasil!");
+                return;
+            }
+
+            // Event berbayar → redirect ke Midtrans Snap
+            if (res.redirectUrl) {
+                window.location.href = res.redirectUrl;
+                return;
+            }
+
+            toast.error("Gagal redirect ke Midtrans.");
         } catch (err) {
             console.error(err);
-            toast.error("Gagal mendaftar event");
+            toast.error("Gagal mendaftar event.");
         } finally {
             setSubmitting(false);
         }
@@ -173,7 +174,7 @@ export default function EventDetailPage() {
                 event={event}
                 hasRegistered={hasRegistered}
                 hasAttended={hasAttended}
-                onRegister={handleRegisterClick}
+                onRegister={handleRegister}
                 onOpenOtp={() => setIsOtpOpen(true)}
                 isWithinAttendWindow={isWithinAttendWindow}
             />
@@ -183,31 +184,24 @@ export default function EventDetailPage() {
                     <h2 className="text-2xl font-semibold">Rekomendasi Event</h2>
                     <div className="flex flex-col gap-6">
                         {loadingRecom ? (
-                            Array.from({ length: 4 }).map((_, i) => <SmallEventCardSkeleton key={i} />)
+                            Array.from({ length: 4 }).map((_, i) => (
+                                <SmallEventCardSkeleton key={i} />
+                            ))
                         ) : events.length === 0 ? (
                             <p className="col-span-4 text-center py-6">Tidak ada event.</p>
                         ) : (
-                            events.slice(0, 4).map((ev) => <SmallEventCard key={ev.id} event={ev} />)
+                            events.slice(0, 4).map((ev) => (
+                                <SmallEventCard key={ev.id} event={ev} />
+                            ))
                         )}
                     </div>
                 </div>
 
-                {/* Event Details */}
                 <div
                     className="tiptap w-full col-span-2 order-1 md:order-2"
                     dangerouslySetInnerHTML={{ __html: event.description }}
                 />
-
             </section>
-
-            <RegistrationModal
-                isModalOpen={isModalOpen}
-                setIsModalOpen={setIsModalOpen}
-                setPaymentProof={setPaymentProof}
-                handleSubmit={handleSubmit}
-                submitting={submitting}
-                event={event}
-            />
 
             {isOtpOpen && (
                 <OtpModal
