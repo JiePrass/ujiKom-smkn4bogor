@@ -12,16 +12,23 @@ exports.notification = async (req, res) => {
         const notif = await core.transaction.notification(req.body);
         const orderId = notif.order_id;
         const status = notif.transaction_status;
-        
-        console.log("WEBHOOK BODY:", notif);
 
         let newStatus = "PENDING";
 
-        if (status === "settlement") newStatus = "APPROVED";
-        if (status === "expire") newStatus = "EXPIRED";
-        if (status === "deny") newStatus = "REJECTED";
-        if (status === "cancel") newStatus = "CANCELLED";
-        
+        if (status === "capture" && notif.fraud_status === "accept")
+            newStatus = "APPROVED";
+
+        if (status === "settlement")
+            newStatus = "APPROVED";
+
+        if (status === "expire")
+            newStatus = "EXPIRED";
+
+        if (status === "deny")
+            newStatus = "REJECTED";
+
+        if (status === "cancel")
+            newStatus = "CANCELLED";
 
         await prisma.registration.update({
             where: { orderId },
@@ -35,3 +42,4 @@ exports.notification = async (req, res) => {
         return res.status(500).json({ error: err.message });
     }
 };
+
