@@ -56,7 +56,6 @@ app.use('/dashboard', require('./routes/dashboard.route'));
 app.use('/certificates', require('./routes/certificate.route'));
 app.use('/user', require('./routes/user.route'));
 app.use('/galleries', require('./routes/gallery.route'));
-app.use('/payments', require('./routes/payment.route'));   // bukan webhook
 
 // ----------------------------------------------------
 // 6️⃣ ERROR HANDLER
