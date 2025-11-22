@@ -26,6 +26,7 @@
     "isomorphic-dompurify": "^2.26.0",
     "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.2",
+    "midtrans-client": "^1.4.3",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "node-cron": "^4.2.1",

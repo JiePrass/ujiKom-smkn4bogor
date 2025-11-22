@@ -132,7 +132,7 @@ exports.requestPasswordReset = async ({ email }) => {
     });
 
     // Buat URL reset password (sesuaikan domain frontend Anda)
-    const resetUrl = `http://simkas.highfiveindonesia.com/reset-password?token=${token}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
     // Kirim email
     const emailHtml = `

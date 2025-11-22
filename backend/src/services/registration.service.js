@@ -3,7 +3,7 @@ const { Parser } = require("json2csv");
 const cloudinary = require('cloudinary').v2;
 const mailer = require('../utils/mailer');
 const prisma = new PrismaClient();
-const fs = require('fs');
+const midtransClient = require('midtrans-client');
 const axios = require('axios')
 
 // === Konfigurasi Cloudinary ===
@@ -11,6 +11,12 @@ cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const snap = new midtransClient.Snap({
+    isProduction: false,
+    serverKey: process.env.MIDTRANS_SERVER_KEY,
+    clientKey: process.env.MIDTRANS_CLIENT_KEY
 });
 
 // === Fungsi pembuat token ===
@@ -38,82 +44,84 @@ exports.registerToEvent = async (eventId, req, user) => {
         });
         if (alreadyRegistered) throw new Error("Anda sudah terdaftar di event ini.");
 
-        let paymentProofUrl = null;
-        let status = "APPROVED";
-        let token = null;
-
-        // === Jika event berbayar ===
+        // Jika event berbayar
         if (event.price > 0) {
-            const paymentProofFile = req.files?.paymentProof?.[0];
-            if (!paymentProofFile) throw new Error("Bukti pembayaran wajib diunggah.");
+            const orderId = `ORDER-${event.id}-${user.id}-${Date.now()}`;
 
-            try {
-                const uploadResult = await cloudinary.uploader.upload(paymentProofFile.path, {
-                    folder: `simkas/payments/${event.id}`,
-                    use_filename: true,
-                    unique_filename: true,
-                    resource_type: "image"
-                });
-                paymentProofUrl = uploadResult.secure_url;
-                status = "PENDING";
-            } catch (err) {
-                console.error("Cloudinary upload failed:", err.message);
-                throw new Error("Gagal mengunggah bukti pembayaran.");
-            } finally {
-                if (paymentProofFile?.path && fs.existsSync(paymentProofFile.path)) {
-                    fs.unlinkSync(paymentProofFile.path);
+            const parameter = {
+                transaction_details: {
+                    order_id: orderId,
+                    gross_amount: event.price,
+                },
+                customer_details: {
+                    first_name: user.fullName,
+                    email: user.email
                 }
-            }
-        } else {
-            token = generateAlphanumericToken(8);
+            };
+
+            const midtrans = await snap.createTransaction(parameter);
+
+            const registration = await prisma.registration.create({
+                data: {
+                    userId: user.id,
+                    eventId: event.id,
+                    status: "PENDING",
+                    orderId: orderId,
+                    midtransToken: midtrans.token,
+                    paymentUrl: midtrans.redirect_url
+                },
+                include: { event: true, user: true }
+            });
+
+            return {
+                message: "Silakan lanjutkan pembayaran melalui Midtrans.",
+                midtransToken: midtrans.token,
+                redirectUrl: midtrans.redirect_url,
+                registration
+            };
         }
 
+        // === Event GRATISS ===
         const registration = await prisma.registration.create({
             data: {
                 userId: user.id,
                 eventId: event.id,
-                paymentProofUrl,
-                status,
-                ...(token && { token })
+                status: "APPROVED"
             },
             include: { event: true, user: true }
         });
 
-        // === Kirim email token kalau APPROVED ===
-        if (status === "APPROVED") {
-            if (!token) {
-                token = generateAlphanumericToken(8);
-                await prisma.registration.update({
-                    where: { id: registration.id },
-                    data: { token }
-                });
-            }
+        // Generate token
+        const token = generateAlphanumericToken(8);
 
-            try {
-                await mailer(
-                    registration.user.email,
-                    `Token Pendaftaran Event ${event.title}`,
-                    `
-            <p>Halo ${user.fullName},</p>
-            <p>Terima kasih telah mendaftar pada event <strong>${event.title}</strong>.</p>
-            <p>Berikut token pendaftaran Anda:</p>
-            <h2 style="letter-spacing: 2px; color: #2E86DE;">${token}</h2>
-            <p>Gunakan token ini untuk verifikasi kehadiran saat event berlangsung.</p>
-            <p>Salam,<br/>Tim SIMKAS</p>
-            `
-                );
-            } catch (err) {
-                console.error("❌ Email gagal dikirim:", err.message);
-            }
+        await prisma.registration.update({
+            where: { id: registration.id },
+            data: { token }
+        });
+
+        // Kirim email
+        try {
+            await mailer(
+                registration.user.email,
+                `Token Pendaftaran Event ${event.title}`,
+                `
+                <p>Halo ${user.fullName},</p>
+                <p>Terima kasih telah mendaftar pada event <strong>${event.title}</strong>.</p>
+                <p>Berikut token pendaftaran Anda:</p>
+                <h2 style="letter-spacing: 2px; color: #2E86DE;">${token}</h2>
+                <p>Gunakan token ini untuk verifikasi kehadiran saat event berlangsung.</p>
+                <p>Salam,<br/>Tim SIMKAS</p>
+                `
+            );
+        } catch (err) {
+            console.error("Email gagal dikirim:", err.message);
         }
 
         return {
-            message:
-                status === "PENDING"
-                    ? "Pendaftaran berhasil, menunggu verifikasi pembayaran."
-                    : "Pendaftaran berhasil. Token telah dikirim ke email Anda.",
+            message: "Pendaftaran berhasil. Token telah dikirim ke email Anda.",
             registration
         };
+
     } catch (error) {
         console.error("registerToEvent error:", error.message);
         throw new Error(error.message || "Terjadi kesalahan saat registrasi event.");

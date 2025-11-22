@@ -72,9 +72,12 @@ model Registration {
   attendance      Attendance?
   checkedInAt     DateTime?
   certificate     Certificate?
-  paymentProofUrl String?
-  status          String?
+  orderId         String?      @unique
+  midtransToken   String?
+  paymentUrl      String?
+  status          String       @default("PENDING")
 }
+
 
 model Attendance {
   id             Int          @id @default(autoincrement())
