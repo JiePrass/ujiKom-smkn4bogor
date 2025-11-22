@@ -1,5 +1,6 @@
 const prisma = new (require('@prisma/client').PrismaClient)();
 const midtransClient = require('midtrans-client');
+const registrationService = require('../services/registration.service');
 
 const core = new midtransClient.CoreApi({
     isProduction: false,
@@ -30,10 +31,17 @@ exports.notification = async (req, res) => {
         if (status === "cancel")
             newStatus = "CANCELLED";
 
-        await prisma.registration.update({
-            where: { orderId },
-            data: { status: newStatus }
+        // Cari registrasi
+        const registration = await prisma.registration.findFirst({
+            where: { orderId }
         });
+
+        if (!registration) {
+            console.error("Registration not found for orderId:", orderId);
+            return res.json({ message: "Registration not found" });
+        }
+
+        await registrationService.updatePaymentStatus(registration.id, newStatus);
 
         return res.json({ message: "OK" });
 
@@ -42,4 +50,5 @@ exports.notification = async (req, res) => {
         return res.status(500).json({ error: err.message });
     }
 };
+
 
