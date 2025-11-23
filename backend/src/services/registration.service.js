@@ -289,7 +289,7 @@ exports.checkUserRegistration = async (eventId, userId) => {
         },
         select: {
             id: true,
-            status: true,
+            status: true,     // PENTING → Ambil status
             orderId: true,
             paymentUrl: true,
             midtransToken: true
