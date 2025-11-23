@@ -151,8 +151,23 @@ export default function EventDetailPage() {
             }
 
             // Event berbayar → redirect ke Midtrans Snap
-            if (res.redirectUrl) {
-                window.location.href = res.redirectUrl;
+            if (res.midtransToken) {
+                window.snap.pay(res.midtransToken, {
+                    onSuccess: () => {
+                        toast.success("Pembayaran berhasil!");
+                        setHasRegistered(true);
+                    },
+                    onPending: () => {
+                        toast.info("Menunggu pembayaran...");
+                    },
+                    onError: () => {
+                        toast.error("Pembayaran gagal.");
+                    },
+                    onClose: () => {
+                        setHasRegistered(false);
+                        toast.warning("Anda menutup pembayaran.");
+                    }
+                });
                 return;
             }
 

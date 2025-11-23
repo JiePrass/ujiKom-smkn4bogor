@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local"
+import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/context/authContext";
+import Script from "next/script";
 
 const sfPro = localFont({
   src: [
@@ -17,7 +18,7 @@ const sfPro = localFont({
   ],
   variable: "--font-sfpro",
   display: "swap",
-})
+});
 
 export const metadata: Metadata = {
   title: "SIMKAS - Sistem Informasi Manajemen Kegiatan Akademi Sekolah",
@@ -27,11 +28,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <AuthProvider>
-        <body className={`${sfPro.variable} antialiased`}>
+      <body className={`${sfPro.variable} antialiased`}>
+        <AuthProvider>
           {children}
-        </body>
-      </AuthProvider>
+        </AuthProvider>
+
+        {/* MIDTRANS SNAP.JS */}
+        <Script
+          src="https://app.sandbox.midtrans.com/snap/snap.js"
+          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+          strategy="afterInteractive"
+        />
+      </body>
     </html>
   );
 }

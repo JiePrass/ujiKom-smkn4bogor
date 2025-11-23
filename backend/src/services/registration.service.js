@@ -34,18 +34,35 @@ function generateAlphanumericToken(length = 8) {
  *  ======================= */
 exports.registerToEvent = async (eventId, req, user) => {
     try {
+        // Ambil event
         const event = await prisma.event.findUnique({
             where: { id: parseInt(eventId) }
         });
         if (!event) throw new Error("Event tidak ditemukan.");
 
-        const alreadyRegistered = await prisma.registration.findFirst({
+        // Cek apakah user sudah pernah daftar
+        const existing = await prisma.registration.findFirst({
             where: { userId: user.id, eventId: event.id }
         });
-        if (alreadyRegistered) throw new Error("Anda sudah terdaftar di event ini.");
 
-        // Jika event berbayar
+        // Jika ada registrasi lama
+        if (existing) {
+            // PENDING = user belum bayar / tutup midtrans
+            if (existing.status === "PENDING" || existing.status === "REJECTED") {
+                await prisma.registration.delete({
+                    where: { id: existing.id }
+                });
+            } else {
+                // APPROVED → tidak boleh daftar ulang
+                throw new Error("Anda sudah terdaftar di event ini.");
+            }
+        }
+
+        // ============================
+        // EVENT BERBAYAR
+        // ============================
         if (event.price > 0) {
+
             const orderId = `ORDER-${event.id}-${user.id}-${Date.now()}`;
 
             const parameter = {
@@ -59,14 +76,16 @@ exports.registerToEvent = async (eventId, req, user) => {
                 }
             };
 
+            // Buat token baru dari Midtrans
             const midtrans = await snap.createTransaction(parameter);
 
+            // Simpan registrasi pending
             const registration = await prisma.registration.create({
                 data: {
                     userId: user.id,
                     eventId: event.id,
                     status: "PENDING",
-                    orderId: orderId,
+                    orderId,
                     midtransToken: midtrans.token,
                     paymentUrl: midtrans.redirect_url
                 },
@@ -81,7 +100,9 @@ exports.registerToEvent = async (eventId, req, user) => {
             };
         }
 
-        // === Event GRATISS ===
+        // ============================
+        // EVENT GRATIS
+        // ============================
         const registration = await prisma.registration.create({
             data: {
                 userId: user.id,
@@ -91,7 +112,7 @@ exports.registerToEvent = async (eventId, req, user) => {
             include: { event: true, user: true }
         });
 
-        // Generate token
+        // Generate token kehadiran
         const token = generateAlphanumericToken(8);
 
         await prisma.registration.update({
@@ -99,7 +120,7 @@ exports.registerToEvent = async (eventId, req, user) => {
             data: { token }
         });
 
-        // Kirim email
+        // Kirim email token
         try {
             await mailer(
                 registration.user.email,
@@ -127,6 +148,7 @@ exports.registerToEvent = async (eventId, req, user) => {
         throw new Error(error.message || "Terjadi kesalahan saat registrasi event.");
     }
 };
+
 
 /** =======================
  *  GET REGISTRATION BY EVENT
