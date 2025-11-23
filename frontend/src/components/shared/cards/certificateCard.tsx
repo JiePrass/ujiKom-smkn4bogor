@@ -10,7 +10,7 @@ interface Certificate {
     eventTitle: string;
     eventDate: string;
     issuedAt: string;
-    fileUrl: string;
+    url: string;
 }
 
 interface CertificateCardProps {
@@ -20,10 +20,12 @@ interface CertificateCardProps {
 export default function CertificateCard({ certificate }: CertificateCardProps) {
     const [isFullscreen, setIsFullscreen] = useState(false);
 
-    const hasFile = Boolean(certificate.fileUrl);
-    const fileUrl = hasFile
-        ? `${process.env.NEXT_PUBLIC_API_URL}${certificate.fileUrl}`
+    const hasFile = Boolean(certificate.url);
+    const url = hasFile
+        ? `${certificate.url}`
         : null;
+
+    console.log("Certificate:", certificate);
 
     return (
         <>
@@ -32,7 +34,7 @@ export default function CertificateCard({ certificate }: CertificateCardProps) {
                 <div className="relative w-full h-48 group bg-gray-100 flex items-center justify-center">
                     {hasFile ? (
                         <Image
-                            src={fileUrl!}
+                            src={url!}
                             alt={certificate.eventTitle ?? "Certificate"}
                             fill
                             className="object-cover"
@@ -72,7 +74,7 @@ export default function CertificateCard({ certificate }: CertificateCardProps) {
             {hasFile && (
                 <ImageFullscreenModal
                     isOpen={isFullscreen}
-                    imageUrl={fileUrl!}
+                    imageUrl={url!}
                     alt={certificate.eventTitle ?? "Certificate"}
                     onClose={() => setIsFullscreen(false)}
                 />

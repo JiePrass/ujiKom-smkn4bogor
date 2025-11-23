@@ -31,7 +31,7 @@ interface Certificate {
     eventTitle: string;
     eventDate: string;
     issuedAt: string;
-    fileUrl: string;
+    url: string;
 }
 
 interface UserProfile {
@@ -148,7 +148,7 @@ export default function ProfilePage() {
             <div className="relative -z-10 h-64 w-full">
                 {profile.bannerUrl ? (
                     <Image
-                        src={`${process.env.NEXT_PUBLIC_API_URL}${profile.bannerUrl}`}
+                        src={`${profile.bannerUrl}`}
                         alt="Banner"
                         fill
                         className="object-cover"
@@ -163,7 +163,7 @@ export default function ProfilePage() {
                 <div className="-mt-24 flex gap-4 items-end">
                     {profile.profilePicture ? (
                         <Image
-                            src={`${process.env.NEXT_PUBLIC_API_URL}${profile.profilePicture}`}
+                            src={`${profile.profilePicture}`}
                             alt={profile.fullName}
                             width={100}
                             height={100}

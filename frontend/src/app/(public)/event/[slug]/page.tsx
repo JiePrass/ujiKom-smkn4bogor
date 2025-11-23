@@ -77,8 +77,8 @@ export default function EventDetailPage() {
                 if (isLoggedIn) {
                     try {
                         const res = await checkUserRegistration(id);
-                        setHasRegistered(res.isRegistered);
-                        if (res.isAttended) setHasAttended(true);
+                        setHasRegistered(Boolean(res.registered));
+                        setHasAttended(res.status === "ATTENDED");
                     } catch (err) {
                         console.error("Gagal cek registrasi:", err);
                     }

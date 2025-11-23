@@ -35,7 +35,7 @@ export default function ProfileDropdown({ userData }: ProfileDropdownProps) {
             <DropdownMenuTrigger asChild>
                 <Avatar className="h-8 w-8 rounded-full cursor-pointer">
                     <AvatarImage
-                        src={userData.profilePicture ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${userData.profilePicture}` : undefined}
+                        src={userData.profilePicture ? `${userData.profilePicture}` : undefined}
                         alt={userData.fullName}
                     />
                     <AvatarFallback className="font-semibold text-xs">
@@ -47,7 +47,7 @@ export default function ProfileDropdown({ userData }: ProfileDropdownProps) {
                 <DropdownMenuLabel className="flex items-center gap-2">
                     <Avatar className="h-12 w-12 rounded-full">
                         <AvatarImage
-                            src={userData.profilePicture ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${userData.profilePicture}` : undefined}
+                            src={userData.profilePicture ? `${userData.profilePicture}` : undefined}
                             alt={userData.fullName}
                         />
                         <AvatarFallback className="rounded-full font-semibold text-lg">
