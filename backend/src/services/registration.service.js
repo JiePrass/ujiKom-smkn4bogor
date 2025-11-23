@@ -281,8 +281,37 @@ exports.updatePaymentStatus = async (registrationId, status) => {
  *  CHECK USER REGISTRATION
  *  ======================= */
 exports.checkUserRegistration = async (eventId, userId) => {
+    // Cari registrasi user pada event tersebut
     const registration = await prisma.registration.findFirst({
-        where: { eventId: parseInt(eventId), userId },
+        where: {
+            eventId: parseInt(eventId),
+            userId: userId
+        },
+        select: {
+            id: true,
+            status: true,
+            orderId: true,
+            paymentUrl: true,
+            midtransToken: true
+        }
     });
-    return !!registration;
+
+    // Jika tidak ada registrasi
+    if (!registration) {
+        return {
+            registered: false,
+            status: "NONE"
+        };
+    }
+
+    // Jika ada registrasi → kembalikan detail lengkap
+    return {
+        registered: true,
+        status: registration.status,
+        registrationId: registration.id,
+        orderId: registration.orderId,
+        paymentUrl: registration.paymentUrl,
+        midtransToken: registration.midtransToken
+    };
 };
+
