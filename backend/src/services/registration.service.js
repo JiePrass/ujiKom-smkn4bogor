@@ -73,7 +73,15 @@ exports.registerToEvent = async (eventId, req, user) => {
                 customer_details: {
                     first_name: user.fullName,
                     email: user.email
-                }
+                },
+                callbacks: {
+                    finish: "https://simkas.highfiveindonesia.com/payment/finish",
+                    pending: "https://simkas.highfiveindonesia.com/payment/pending",
+                    error: "https://simkas.highfiveindonesia.com/payment/error"
+                },
+                finish_redirect_url: "https://simkas.highfiveindonesia.com/payment/finish",
+                unfinish_redirect_url: "https://simkas.highfiveindonesia.com/payment/unfinish",
+                error_redirect_url: "https://simkas.highfiveindonesia.com/payment/error",
             };
 
             // Buat token baru dari Midtrans
@@ -148,7 +156,6 @@ exports.registerToEvent = async (eventId, req, user) => {
         throw new Error(error.message || "Terjadi kesalahan saat registrasi event.");
     }
 };
-
 
 /** =======================
  *  GET REGISTRATION BY EVENT
