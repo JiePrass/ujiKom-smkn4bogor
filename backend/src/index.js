@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const { PrismaClient } = require('@prisma/client');
+const ensureFolders = require('./utils/ensureFolders');
+ensureFolders();
 
 const app = express();
 const prisma = new PrismaClient();
