@@ -166,6 +166,8 @@ export default function Header() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, [lastScrollY]);
 
+    console.log("User in Header:", user);
+
     return (
         <>
             <header

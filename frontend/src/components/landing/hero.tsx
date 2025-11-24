@@ -74,7 +74,7 @@ export function HeroSection() {
                     {/* Right Image */}
                     <div className="relative w-full h-72 md:h-108 rounded-lg overflow-hidden">
                         <Image
-                            src="/images/hero-middle.png"
+                            src="/images/17an.jpg"
                             alt="Suasana Event Edukasi"
                             fill
                             className="object-cover saturate-0"

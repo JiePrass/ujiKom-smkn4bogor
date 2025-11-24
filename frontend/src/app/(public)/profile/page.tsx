@@ -82,8 +82,39 @@ export default function ProfilePage() {
 
     if (authLoading || loading) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <p className="text-gray-500">Loading...</p>
+            <div className="animate-pulse">
+                {/* Banner */}
+                <div className="h-40 sm:h-56 md:h-72 w-full bg-gray-300" />
+
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="-mt-20 sm:-mt-24 flex flex-col sm:flex-row gap-6 items-start sm:items-end">
+
+                        {/* Profile Picture */}
+                        <div className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-gray-300 rounded-md" />
+
+                        <div className="flex flex-col sm:flex-row justify-between w-full mb-8 sm:mb-12 gap-4 sm:gap-0">
+
+                            {/* User Info */}
+                            <div className="flex flex-col gap-4 w-full max-w-[380px]">
+                                <div className="h-6 w-40 bg-gray-300 rounded" />
+                                <div className="h-4 w-52 bg-gray-300 rounded" />
+                                <div className="h-4 w-32 bg-gray-300 rounded" />
+                            </div>
+
+                            {/* Stats */}
+                            <div className="flex items-center gap-8 sm:gap-12">
+                                <div className="flex flex-col gap-2">
+                                    <div className="h-4 w-20 bg-gray-300 rounded" />
+                                    <div className="h-6 w-10 bg-gray-300 rounded" />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <div className="h-4 w-24 bg-gray-300 rounded" />
+                                    <div className="h-6 w-10 bg-gray-300 rounded" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -117,7 +148,6 @@ export default function ProfilePage() {
         return result;
     };
 
-
     const filteredCertificates = filterList(
         profile.certificates,
         (c) => c.eventTitle ?? "",
@@ -130,8 +160,6 @@ export default function ProfilePage() {
         (e) => e.date
     );
 
-    console.log({ filteredCertificates, filteredEvents });
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const EmptyState = ({ icon: Icon, message }: { icon: any; message: string }) => (
         <div className="flex flex-col items-center justify-center py-20 text-center text-gray-500">
@@ -140,12 +168,10 @@ export default function ProfilePage() {
         </div>
     );
 
-    console.log("Data:", profile)
-
     return (
         <div>
             {/* Banner */}
-            <div className="relative -z-10 h-64 w-full">
+            <div className="relative -z-10 h-40 sm:h-56 md:h-72 w-full">
                 {profile.bannerUrl ? (
                     <Image
                         src={`${profile.bannerUrl}`}
@@ -159,26 +185,29 @@ export default function ProfilePage() {
                 <div className="absolute inset-0 bg-black/40" />
             </div>
 
-            <div className="container mx-auto">
-                <div className="-mt-24 flex gap-4 items-end">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="-mt-20 sm:-mt-24 flex flex-col sm:flex-row gap-6 items-start sm:items-end">
+
+                    {/* Profile Picture */}
                     {profile.profilePicture ? (
                         <Image
                             src={`${profile.profilePicture}`}
                             alt={profile.fullName}
-                            width={100}
-                            height={100}
-                            className="w-64 h-64 object-cover rounded-md aspect-square shadow"
+                            width={160}
+                            height={160}
+                            className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 object-cover rounded-md shadow"
                         />
                     ) : (
-                        <div className="w-64 h-64 flex items-center aspect-square justify-center bg-gray-700 text-white text-2xl font-semibold rounded-md shadow">
+                        <div className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 flex items-center justify-center bg-gray-700 text-white text-xl sm:text-2xl md:text-3xl font-semibold rounded-md shadow">
                             {getInitials(profile.fullName)}
                         </div>
                     )}
 
-                    <div className="flex justify-between w-full mb-12 items-center">
+                    <div className="flex flex-col sm:flex-row justify-between w-full mb-8 sm:mb-12 gap-4 sm:gap-0">
+                        {/* User Info */}
                         <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-4">
-                                <h2 className="text-3xl font-semibold">{profile.fullName}</h2>
+                            <div className="flex items-center gap-4 flex-wrap">
+                                <h2 className="text-2xl sm:text-3xl font-semibold">{profile.fullName}</h2>
                                 <EditProfileModal
                                     userId={profile.id}
                                     profile={profile}
@@ -187,42 +216,47 @@ export default function ProfilePage() {
                                     }}
                                 />
                             </div>
+
                             <div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                     <p className="text-gray-600">{profile.email}</p>
 
                                     {!profile?.isVerified && (
                                         <div className="flex items-center gap-1 text-red-600 text-sm">
-                                            <span className="flex items-center gap-1">
-                                                Belum diverifikasi
-                                            </span>
+                                            <span>Belum diverifikasi</span>
                                             <Button
                                                 variant="link"
                                                 size="sm"
                                                 className="text-blue-600 underline p-0"
-                                                onClick={() => (window.location.href = `/verify-email?email=${profile.email}`)}
+                                                onClick={() =>
+                                                    (window.location.href = `/verify-email?email=${profile.email}`)
+                                                }
                                             >
                                                 Verifikasi sekarang
                                             </Button>
                                         </div>
                                     )}
                                 </div>
+
                                 <p className="text-gray-600">{profile.education}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-12">
-                            <div className="flex flex-col gap-2">
+
+                        {/* Stats */}
+                        <div className="flex items-center gap-8 sm:gap-12">
+                            <div className="flex flex-col gap-2 text-center sm:text-left">
                                 <p className="text-gray-500">Total Event</p>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 justify-center sm:justify-start">
                                     <Calendar className="text-gray-600" />
-                                    <p className="font-bold text-2xl">{profile.events.length}</p>
+                                    <p className="font-bold text-xl sm:text-2xl">{profile.events.length}</p>
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-2">
+
+                            <div className="flex flex-col gap-2 text-center sm:text-left">
                                 <p className="text-gray-500">Total Sertifikat</p>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 justify-center sm:justify-start">
                                     <FileText className="text-gray-600" />
-                                    <p className="font-bold text-2xl">
+                                    <p className="font-bold text-xl sm:text-2xl">
                                         {profile.certificates.length}
                                     </p>
                                 </div>
@@ -233,23 +267,23 @@ export default function ProfilePage() {
 
                 {/* Tabs */}
                 <Tabs defaultValue="certificates" className="my-10">
-                    <div className="flex justify-between items-center border-b">
-                        <TabsList className="bg-transparent p-0 border-none">
+                    <div className="flex flex-wrap justify-between items-center border-b gap-3 pb-2">
+                        <TabsList className="bg-transparent p-0 border-none flex flex-wrap">
                             <TabsTrigger
                                 value="certificates"
-                                className="rounded-none border-none shadow-none px-4 py-2 text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black"
+                                className="rounded-none px-3 py-2 text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black"
                             >
                                 Sertifikat
                             </TabsTrigger>
                             <TabsTrigger
                                 value="events"
-                                className="rounded-none border-none shadow-none px-4 py-2 text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black"
+                                className="rounded-none px-3 py-2 text-gray-500 data-[state=active]:text-black data-[state=active]:border-b-2 data-[state=active]:border-black"
                             >
                                 Event
                             </TabsTrigger>
                         </TabsList>
 
-                        <div className="flex items-center gap-2 py-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <SearchBar
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -266,12 +300,8 @@ export default function ProfilePage() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={() => setFilterType("newest")}>
-                                        Terbaru
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setFilterType("oldest")}>
-                                        Terlama
-                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setFilterType("newest")}>Terbaru</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setFilterType("oldest")}>Terlama</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -280,7 +310,6 @@ export default function ProfilePage() {
                     {/* Certificates */}
                     <TabsContent value="certificates" className="mt-6">
                         {loading ? (
-                            // skeleton loading
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {Array.from({ length: 4 }).map((_, i) => (
                                     <CertificateSkeleton key={i} />
@@ -293,36 +322,28 @@ export default function ProfilePage() {
                                 ))}
                             </div>
                         ) : (
-                            <EmptyState
-                                icon={FileText}
-                                message="Belum ada sertifikat yang tersedia."
-                            />
+                            <EmptyState icon={FileText} message="Belum ada sertifikat yang tersedia." />
                         )}
                     </TabsContent>
 
                     {/* Events */}
                     <TabsContent value="events" className="mt-6">
                         {loading ? (
-                            // skeleton loading
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {Array.from({ length: 4 }).map((_, i) => (
                                     <EventCardSkeleton key={i} />
                                 ))}
                             </div>
                         ) : filteredEvents.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {filteredEvents.map((event) => (
                                     <EventCard key={event.id} event={event} />
                                 ))}
                             </div>
                         ) : (
-                            <EmptyState
-                                icon={Inbox}
-                                message="Belum ada event yang diikuti."
-                            />
+                            <EmptyState icon={Inbox} message="Belum ada event yang diikuti." />
                         )}
                     </TabsContent>
-
                 </Tabs>
             </div>
         </div>
